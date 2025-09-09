@@ -1,30 +1,53 @@
-﻿import { useState } from "react"
+﻿import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Users, CreditCard, Star, Sparkles } from "lucide-react"
-import packages from "../../data/packagesData" // ✅ Import shared list
+import { collection, getDocs } from "firebase/firestore"
+import { db } from "../../firebase"
 
 function Recommendation() {
   const [guests, setGuests] = useState("")
   const [recommendations, setRecommendations] = useState([])
+  const [packages, setPackages] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch packages from Firestore
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "packages"))
+        const data = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        setPackages(data)
+      } catch (err) {
+        console.error("Error fetching packages:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPackages()
+  }, [])
 
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    if (!guests || guests <= 0) {
+    const guestNum = parseInt(guests, 10)
+    if (!guestNum || guestNum <= 0) {
       setRecommendations([])
       return
     }
 
     const recs = packages.filter((pkg) => {
-      // Extract max guest number from capacity (handles "Up to 1000 guests" etc.)
-      const match = pkg.capacity.match(/\d+/g)
+      // Extract max guest number from capacity string (e.g. "Up to 1000 guests")
+      const match = pkg.capacity?.match(/\d+/g)
       const maxGuests = match ? parseInt(match.pop(), 10) : Infinity
-      return guests <= maxGuests
+      return guestNum <= maxGuests
     })
 
     recs.sort((a, b) => {
-      const maxA = parseInt(a.capacity.match(/\d+/g)?.pop() ?? "99999", 10)
-      const maxB = parseInt(b.capacity.match(/\d+/g)?.pop() ?? "99999", 10)
+      const maxA = parseInt(a.capacity?.match(/\d+/g)?.pop() ?? "99999", 10)
+      const maxB = parseInt(b.capacity?.match(/\d+/g)?.pop() ?? "99999", 10)
       return maxA - maxB
     })
 
@@ -37,7 +60,7 @@ function Recommendation() {
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-900">Smart Recommendations</h1>
         <p className="mt-3 text-gray-600 text-lg">
-          Find the best package that matches your event size & type.
+          Instantly find the best package for your event size & type.
         </p>
       </div>
 
@@ -52,15 +75,16 @@ function Recommendation() {
             type="number"
             value={guests}
             onChange={(e) => setGuests(e.target.value)}
-            className="mt-2 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
+            className="mt-2 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600"
             placeholder="Enter guest count"
           />
         </label>
         <button
           type="submit"
-          className="w-full px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition"
+          disabled={loading}
+          className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
         >
-          Get Recommendations
+          {loading ? "Loading Packages..." : "Get Recommendations"}
         </button>
       </form>
 
@@ -75,7 +99,12 @@ function Recommendation() {
             {recommendations.map((pkg) => (
               <motion.div
                 key={pkg.id}
-                className={`p-6 rounded-2xl shadow-md text-white bg-gradient-to-r ${pkg.color} hover:shadow-lg transition`}
+                className="p-6 rounded-2xl shadow-md text-white hover:shadow-lg transition bg-gradient-to-r"
+                style={{
+                  background: pkg.colorFrom
+                    ? `linear-gradient(to right, ${pkg.colorFrom}, ${pkg.colorTo})`
+                    : "linear-gradient(to right, #6366f1, #8b5cf6)",
+                }}
                 whileHover={{ scale: 1.03 }}
                 initial={{ y: 40, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -94,16 +123,20 @@ function Recommendation() {
                   {pkg.price}
                 </p>
 
-                <p className="mt-2 flex items-center gap-2 italic">
-                  <Sparkles className="w-4 h-4" />
-                  Recommended for: {pkg.recommendedEvent}
-                </p>
+                {pkg.recommendedEvent && (
+                  <p className="mt-2 flex items-center gap-2 italic">
+                    <Sparkles className="w-4 h-4" />
+                    Recommended for: {pkg.recommendedEvent}
+                  </p>
+                )}
 
-                <ul className="mt-4 list-disc list-inside space-y-1">
-                  {pkg.extras?.map((extra, i) => (
-                    <li key={i}>{extra}</li>
-                  ))}
-                </ul>
+                {pkg.extras && (
+                  <ul className="mt-4 list-disc list-inside space-y-1">
+                    {pkg.extras.map((extra, i) => (
+                      <li key={i}>{extra}</li>
+                    ))}
+                  </ul>
+                )}
 
                 <a
                   href={`/packages/${pkg.id}`}
@@ -129,4 +162,3 @@ function Recommendation() {
 }
 
 export default Recommendation
-// DESIGN AND IMPLEMENTATION OF A WEB-BASED SOUND SYSTEM RENTAL APPLICATION FOR BROOM ALL ABOUT MUSIC WITH EVENT-CAPACITY VISUALIZATION, INTELLIGENT PACKAGE RECOMMENDATIONS, SMART SCHEDULING, AND AUTOMATED CUSTOMER NOTIFICATIONS

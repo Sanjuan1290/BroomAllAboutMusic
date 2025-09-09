@@ -1,10 +1,35 @@
-﻿import { useParams, Link } from "react-router-dom"
-import packages from "../../data/packagesData"
-
+﻿import { useEffect, useState } from "react"
+import { useParams, Link } from "react-router-dom"
+import { doc, getDoc } from "firebase/firestore"
+import { db } from "../../firebase"
 
 function PackageDetails() {
   const { id } = useParams()
-  const pkg = packages.find((p) => p.id === parseInt(id))
+  const [pkg, setPkg] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchPackage = async () => {
+      try {
+        const docRef = doc(db, "packages", id)
+        const docSnap = await getDoc(docRef)
+        if (docSnap.exists()) {
+          setPkg({ id: docSnap.id, ...docSnap.data() })
+        } else {
+          setPkg(null)
+        }
+      } catch (err) {
+        console.error("Error fetching package:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPackage()
+  }, [id])
+
+  if (loading) {
+    return <p className="text-center text-gray-500 py-20">Loading package...</p>
+  }
 
   if (!pkg) {
     return (
@@ -38,7 +63,9 @@ function PackageDetails() {
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
           {pkg.name}
         </h1>
-        <p className="mt-2 text-gray-600">{pkg.capacity}</p>
+        {pkg.capacity && (
+          <p className="mt-2 text-gray-600">{pkg.capacity}</p>
+        )}
         <p className="mt-4 text-2xl font-bold text-gray-900">{pkg.price}</p>
       </div>
 
@@ -46,21 +73,23 @@ function PackageDetails() {
       <div className="p-6 border rounded-2xl shadow-sm bg-white space-y-4">
         <h2 className="text-xl font-semibold text-gray-900">Package Details</h2>
         <ul className="space-y-2 text-gray-700">
-          <li><strong>Duration:</strong> {pkg.duration}</li>
-          <li><strong>Total Power:</strong> {pkg.power}</li>
-          <li><strong>Speakers:</strong> {pkg.speakers}</li>
-          <li><strong>Microphones:</strong> {pkg.microphones}</li>
-          <li><strong>Subwoofers:</strong> {pkg.subwoofers}</li>
-          <li><strong>Lighting:</strong> {pkg.lighting}</li>
-          <li><strong>Technician:</strong> {pkg.technician}</li>
-          <li className="text-emerald-600 font-medium">
-            <strong>Recommended For:</strong> {pkg.recommendedEvent}
-          </li>
+          {pkg.duration && <li><strong>Duration:</strong> {pkg.duration}</li>}
+          {pkg.power && <li><strong>Total Power:</strong> {pkg.power}</li>}
+          {pkg.speakers && <li><strong>Speakers:</strong> {pkg.speakers}</li>}
+          {pkg.microphones && <li><strong>Microphones:</strong> {pkg.microphones}</li>}
+          {pkg.subwoofers && <li><strong>Subwoofers:</strong> {pkg.subwoofers}</li>}
+          {pkg.lighting && <li><strong>Lighting:</strong> {pkg.lighting}</li>}
+          {pkg.technician && <li><strong>Technician:</strong> {pkg.technician}</li>}
+          {pkg.recommendedEvent && (
+            <li className="text-emerald-600 font-medium">
+              <strong>Recommended For:</strong> {pkg.recommendedEvent}
+            </li>
+          )}
         </ul>
       </div>
 
       {/* Extras */}
-      {pkg.extras && (
+      {pkg.extras && pkg.extras.length > 0 && (
         <div className="p-6 border rounded-2xl shadow-sm bg-white">
           <h2 className="text-xl font-semibold text-gray-900">Extras</h2>
           <ul className="mt-4 space-y-3 text-gray-700">
@@ -81,7 +110,7 @@ function PackageDetails() {
       <div className="text-center">
         <Link
           to={`/checkout/${pkg.id}`}
-          className={`px-8 py-3 text-lg font-medium text-white rounded-lg bg-gradient-to-r ${pkg.color} hover:opacity-90 transition`}
+          className="px-8 py-3 text-lg font-medium text-white rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 hover:opacity-90 transition"
         >
           Book Now
         </Link>

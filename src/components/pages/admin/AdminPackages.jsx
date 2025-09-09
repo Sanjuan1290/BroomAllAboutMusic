@@ -1,5 +1,5 @@
 ﻿import { useState } from "react"
-import { Package, Plus, Pencil, Trash, X } from "lucide-react"
+import { Package, Plus, Pencil, Trash, X, ArrowLeft } from "lucide-react"
 import packagesData from "../../../data/packagesData"
 
 function AdminPackages() {
@@ -62,11 +62,19 @@ function AdminPackages() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header with Back Button */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Package /> Manage Packages
-        </h1>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm"
+          >
+            <ArrowLeft size={16} /> Back
+          </button>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Package /> Manage Packages
+          </h1>
+        </div>
         <button
           onClick={handleAdd}
           className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center gap-2 transition"
