@@ -26,6 +26,8 @@ import AdminCalendar from "./components/pages/admin/AdminCalendar"
 // Route Protection
 import PrivateRoute from "./components/pages/auth/PrivateRoute"
 
+// import UploadPackages from "./util/UploadPackages"
+
 function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
@@ -42,6 +44,7 @@ function App() {
 
         {/* Auth */}
         <Route path="login" element={<Login />} />
+        {/* <Route path="upload" element={<UploadPackages />} /> */}
 
         {/* Admin (Protected) */}
         <Route

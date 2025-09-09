@@ -14,7 +14,8 @@ const packages = [
     extras: ["Free delivery within 10km", "Mixer included"],
     recommendedEvent: "Small birthdays, house parties, casual gatherings",
     image: "/PackageImages/image1.png",
-    color: "from-green-400 to-emerald-500",
+    colorFrom: "#34d399", // green-400
+    colorTo: "#10b981",   // emerald-500
   },
   {
     id: 2,
@@ -31,7 +32,8 @@ const packages = [
     extras: ["Professional Mixer", "Cables & stands included"],
     recommendedEvent: "Weddings, corporate events, school programs",
     image: "/PackageImages/image2.png",
-    color: "from-blue-400 to-indigo-500",
+    colorFrom: "#60a5fa", // blue-400
+    colorTo: "#6366f1",   // indigo-500
   },
   {
     id: 3,
@@ -52,7 +54,8 @@ const packages = [
     ],
     recommendedEvent: "Concerts, festivals, large corporate shows",
     image: "/PackageImages/image3.png",
-    color: "from-purple-500 to-pink-500",
+    colorFrom: "#8b5cf6", // purple-500
+    colorTo: "#ec4899",   // pink-500
   },
   {
     id: 4,
@@ -69,7 +72,8 @@ const packages = [
     extras: ["Full DJ booth", "Transport + logistics support"],
     recommendedEvent: "Large weddings, anniversaries, corporate galas",
     image: "/PackageImages/image4.png",
-    color: "from-red-400 to-orange-500",
+    colorFrom: "#f87171", // red-400
+    colorTo: "#f97316",   // orange-500
   },
   {
     id: 5,
@@ -86,7 +90,8 @@ const packages = [
     extras: ["Presentation support", "Extra wireless mic"],
     recommendedEvent: "Business conferences, seminars, product launches",
     image: "/PackageImages/image5.png",
-    color: "from-yellow-400 to-amber-500",
+    colorFrom: "#facc15", // yellow-400
+    colorTo: "#f59e0b",   // amber-500
   },
   {
     id: 6,
@@ -103,7 +108,8 @@ const packages = [
     extras: ["Backup generator", "On-site logistics team"],
     recommendedEvent: "Festivals, school fairs, outdoor shows",
     image: "/PackageImages/image6.png",
-    color: "from-teal-400 to-cyan-500",
+    colorFrom: "#14b8a6", // teal-400
+    colorTo: "#06b6d4",   // cyan-500
   },
   {
     id: 7,
@@ -120,7 +126,8 @@ const packages = [
     extras: ["Red carpet setup", "VIP lounge sound system", "Backup systems"],
     recommendedEvent: "Major concerts, political rallies, stadium events",
     image: "/PackageImages/image7.png",
-    color: "from-pink-500 to-rose-600",
+    colorFrom: "#ec4899", // pink-500
+    colorTo: "#e11d48",   // rose-600
   },
 ]
 
