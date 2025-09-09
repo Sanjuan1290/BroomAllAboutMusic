@@ -1,6 +1,6 @@
-﻿import { useState } from "react"
+﻿import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { signInWithEmailAndPassword } from "firebase/auth"
+import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth"
 import { auth } from "../../../firebase"
 
 function Login() {
@@ -8,6 +8,16 @@ function Login() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const navigate = useNavigate()
+
+  // 🔹 Redirect if already logged in
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && user.email === "robertrenbysanjuan@gmail.com") {
+        navigate("/admin", { replace: true })
+      }
+    })
+    return () => unsubscribe()
+  }, [navigate])
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -17,8 +27,8 @@ function Login() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
       const user = userCredential.user
 
-      // Only allow admin
-      const adminEmail = "admin@yourapp.com"
+      // ✅ Allow only admin
+      const adminEmail = "robertrenbysanjuan@gmail.com"
       if (user.email === adminEmail) {
         navigate("/admin")
       } else {

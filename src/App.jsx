@@ -24,7 +24,7 @@ import AdminBookings from "./components/pages/admin/AdminBookings"
 import AdminCalendar from "./components/pages/admin/AdminCalendar"
 
 // Route Protection
-import PrivateRoute from "./components/auth/PrivateRoute"
+import PrivateRoute from "./components/pages/auth/PrivateRoute"
 
 function App() {
   const router = createBrowserRouter(
