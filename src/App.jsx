@@ -7,7 +7,6 @@ import Layout from "./components/pages/layout/Layout"
 import Home from "./components/pages/Home"
 import Packages from "./components/pages/Packages"
 import Recommendation from "./components/pages/Recommendation"
-import EventCapacityVisualization from "./components/pages/EventCapacityVisualization"
 import Availability from "./components/pages/Availability"
 import PackageDetails from "./components/pages/PackageDetails"
 import Checkout from "./components/pages/Checkout"
@@ -37,7 +36,6 @@ function App() {
         <Route index element={<Home />} />
         <Route path="packages" element={<Packages />} />
         <Route path="recommendation" element={<Recommendation />} />
-        <Route path="visualization" element={<EventCapacityVisualization />} />
         <Route path="availability" element={<Availability />} />
         <Route path="packages/:id" element={<PackageDetails />} />
         <Route path="checkout/:id" element={<Checkout />} />

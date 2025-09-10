@@ -1,62 +1,79 @@
-﻿import { useState } from "react"
-import { ClipboardList, Trash, CheckCircle, XCircle, ArrowLeft } from "lucide-react"
+﻿import { useState, useEffect } from "react"
+import {
+  ClipboardList,
+  Trash,
+  CheckCircle,
+  XCircle,
+  ArrowLeft,
+} from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import {
+  collection,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore"
+import { db } from "../../../firebase"
 
 function AdminBookings() {
   const navigate = useNavigate()
+  const [bookings, setBookings] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  // Dummy data (replace with Firestore later)
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      name: "Juan Dela Cruz",
-      email: "juan@gmail.com",
-      date: "2025-09-15",
-      package: "Premium Package",
-      status: "pending",
-    },
-    {
-      id: 2,
-      name: "Maria Santos",
-      email: "maria@gmail.com",
-      date: "2025-09-20",
-      package: "Standard Package",
-      status: "confirmed",
-    },
-    {
-      id: 3,
-      name: "Pedro Reyes",
-      email: "pedro@gmail.com",
-      date: "2025-09-25",
-      package: "VIP Package",
-      status: "cancelled",
-    },
-  ])
+  // Fetch bookings from Firestore
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "bookings"))
+        setBookings(
+          snapshot.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          }))
+        )
+      } catch (err) {
+        console.error("Error fetching bookings:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  const handleConfirm = (id) => {
-    setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, status: "confirmed" } : b))
-    )
-  }
+    fetchBookings()
+  }, [])
 
-  const handleCancel = (id) => {
-    setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b))
-    )
-  }
-
-  const handleDelete = (id) => {
-    if (confirm("Are you sure you want to delete this booking?")) {
-      setBookings((prev) => prev.filter((b) => b.id !== id))
+  // Update booking status
+  const updateStatus = async (id, status) => {
+    try {
+      await updateDoc(doc(db, "bookings", id), { status })
+      setBookings((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, status } : b))
+      )
+    } catch (err) {
+      console.error("Error updating booking:", err)
     }
   }
 
+  // Delete booking
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this booking?")) return
+    try {
+      await deleteDoc(doc(db, "bookings", id))
+      setBookings((prev) => prev.filter((b) => b.id !== id))
+    } catch (err) {
+      console.error("Error deleting booking:", err)
+    }
+  }
+
+  if (loading) {
+    return <div className="p-6 text-gray-600">Loading bookings...</div>
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          {/* Back to Dashboard */}
           <button
             onClick={() => navigate("/admin")}
             className="flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition"
@@ -85,10 +102,17 @@ function AdminBookings() {
             </tr>
           </thead>
           <tbody>
+            {bookings.length === 0 && (
+              <tr>
+                <td colSpan="6" className="text-center py-6 text-gray-500">
+                  No bookings found.
+                </td>
+              </tr>
+            )}
             {bookings.map((b) => (
               <tr key={b.id} className="hover:bg-gray-50">
-                <td className="p-3 border-b">{b.name}</td>
-                <td className="p-3 border-b">{b.email}</td>
+                <td className="p-3 border-b">{b.name || "N/A"}</td>
+                <td className="p-3 border-b">{b.email || "N/A"}</td>
                 <td className="p-3 border-b">{b.date}</td>
                 <td className="p-3 border-b">{b.package}</td>
                 <td className="p-3 border-b">
@@ -112,13 +136,13 @@ function AdminBookings() {
                   {b.status === "pending" && (
                     <>
                       <button
-                        onClick={() => handleConfirm(b.id)}
+                        onClick={() => updateStatus(b.id, "confirmed")}
                         className="flex items-center gap-1 px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-sm rounded"
                       >
                         <CheckCircle size={14} /> Confirm
                       </button>
                       <button
-                        onClick={() => handleCancel(b.id)}
+                        onClick={() => updateStatus(b.id, "cancelled")}
                         className="flex items-center gap-1 px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-sm rounded"
                       >
                         <XCircle size={14} /> Cancel
