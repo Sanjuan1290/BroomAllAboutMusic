@@ -26,7 +26,6 @@ function MultiCourt({ guestCount }) {
     for (let col = 0; col < gridSize; col++) {
       if (index >= courtCount) break
 
-      // offset so the grid is centered
       const offsetX = (col - (gridSize - 1) / 2) * 32
       const offsetZ = (row - (gridSize - 1) / 2) * 22
 
@@ -48,7 +47,6 @@ function MultiCourt({ guestCount }) {
   return <group>{courts}</group>
 }
 
-
 // 🔊 Speaker with pulsing waves
 function Speaker({ range }) {
   const pulseRef = useRef()
@@ -62,19 +60,14 @@ function Speaker({ range }) {
 
   return (
     <group position={[0, 0.5, -8]}>
-      {/* Stage */}
       <mesh position={[0, -0.5, 0]}>
         <boxGeometry args={[4, 1, 2]} />
         <meshStandardMaterial color="#444fff" />
       </mesh>
-
-      {/* Speaker */}
       <mesh>
         <boxGeometry args={[1, 2, 1]} />
         <meshStandardMaterial color="yellow" />
       </mesh>
-
-      {/* Pulsing Sound Coverage */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} ref={pulseRef}>
         <circleGeometry args={[range, 64]} />
         <meshBasicMaterial
@@ -102,11 +95,9 @@ function Guests({ count }) {
       for (let courtCol = 0; courtCol < gridSize; courtCol++) {
         if (guestIndex >= count) break
 
-        // offset for each court (same as MultiCourt)
         const offsetX = (courtCol - (gridSize - 1) / 2) * 32
         const offsetZ = (courtRow - (gridSize - 1) / 2) * 22
 
-        // place up to 100 guests on this court
         const guestsOnThisCourt = Math.min(
           capacityPerCourt,
           count - guestIndex
@@ -136,7 +127,6 @@ function Guests({ count }) {
   ))
 }
 
-
 function Recommendation() {
   const [guests, setGuests] = useState("")
   const [warning, setWarning] = useState("")
@@ -147,7 +137,7 @@ function Recommendation() {
 
   const MAX_GUESTS = 1000
 
-  // Fetch packages
+  // Fetch packages once
   useEffect(() => {
     const fetchPackages = async () => {
       try {
@@ -166,11 +156,12 @@ function Recommendation() {
     fetchPackages()
   }, [])
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  // Auto-update recommendations whenever guests/packages change
+  useEffect(() => {
     const guestNum = parseInt(guests, 10)
     if (!guestNum || guestNum <= 0) {
       setRecommendations([])
+      setSelectedPackage(null)
       return
     }
 
@@ -188,9 +179,8 @@ function Recommendation() {
 
     setRecommendations(recs)
     if (recs.length > 0) setSelectedPackage(recs[0])
-  }
+  }, [guests, packages])
 
-  // Speaker range = based on selected package capacity
   const speakerRange = selectedPackage
     ? parseInt(selectedPackage.capacity?.match(/\d+/g)?.pop() ?? "10", 10) / 20
     : 10
@@ -208,46 +198,37 @@ function Recommendation() {
         </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row  items-center ">
+      <div className="flex flex-col lg:flex-row items-center">
         {/* Step 1: Input */}
         <div className="max-w-lg mx-auto bg-white rounded-3xl shadow-xl p-8 space-y-6">
           <h2 className="text-2xl font-semibold text-indigo-700">
             Step 1: Enter Guests
           </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              type="number"
-              value={guests}
-              onChange={(e) => {
-                let val = parseInt(e.target.value || "0", 10)
-                if (val > MAX_GUESTS) {
-                  val = MAX_GUESTS
-                  setWarning(`⚠️ Maximum allowed guests is ${MAX_GUESTS}.`)
-                } else {
-                  setWarning("")
-                }
-                setGuests(val.toString())
-              }}
-              className="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-500 text-lg"
-              placeholder={`e.g. 250 (max ${MAX_GUESTS})`}
-            />
-            {warning && (
-              <p className="flex items-center text-yellow-600 text-sm">
-                <AlertTriangle className="w-4 h-4 mr-2" /> {warning}
-              </p>
-            )}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-md hover:opacity-90 transition disabled:opacity-50"
-            >
-              {loading ? "Loading..." : "Show Results"}
-            </button>
-          </form>
+          <input
+            type="number"
+            value={guests}
+            onChange={(e) => {
+              let val = parseInt(e.target.value || "0", 10)
+              if (val > MAX_GUESTS) {
+                val = MAX_GUESTS
+                setWarning(`⚠️ Maximum allowed guests is ${MAX_GUESTS}.`)
+              } else {
+                setWarning("")
+              }
+              setGuests(val.toString())
+            }}
+            className="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-500 text-lg"
+            placeholder={`e.g. 250 (max ${MAX_GUESTS})`}
+          />
+          {warning && (
+            <p className="flex items-center text-yellow-600 text-sm">
+              <AlertTriangle className="w-4 h-4 mr-2" /> {warning}
+            </p>
+          )}
         </div>
 
         {/* Step 2: 3D Visualization */}
-        {guests && (
+        {parseInt(guests, 10) > 0 && (
           <div className="max-w-5xl mx-auto space-y-2">
             <h2 className="text-2xl font-semibold text-center text-indigo-700 mt-10">
               Step 2: Visualize in 3D
@@ -256,18 +237,10 @@ function Recommendation() {
               <Canvas camera={{ position: [40, 30, 40], fov: 60 }}>
                 <ambientLight intensity={0.6} />
                 <directionalLight position={[10, 15, 5]} />
-
-                {/* Basketball Courts */}
                 <MultiCourt guestCount={parseInt(guests, 10)} />
-
-                {/* Speaker */}
                 <Speaker range={speakerRange} />
-
-                {/* Guests */}
                 <Guests count={parseInt(guests, 10)} />
-
-                {/* Full camera controls */}
-                <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
+                <OrbitControls enablePan enableZoom enableRotate />
               </Canvas>
             </div>
           </div>
@@ -304,7 +277,6 @@ function Recommendation() {
                     <Star className="w-5 h-5 text-yellow-300" />
                     {pkg.name}
                   </h3>
-
                   <p className="mt-3 flex items-center gap-2">
                     <Users className="w-4 h-4" />
                     {pkg.capacity}
@@ -313,14 +285,12 @@ function Recommendation() {
                     <CreditCard className="w-4 h-4" />
                     {pkg.price}
                   </p>
-
                   {pkg.recommendedEvent && (
                     <p className="mt-2 flex items-center gap-2 italic">
                       <Sparkles className="w-4 h-4" />
                       Perfect for: {pkg.recommendedEvent}
                     </p>
                   )}
-
                   {pkg.extras && (
                     <ul className="mt-4 list-disc list-inside space-y-1">
                       {pkg.extras.map((extra, i) => (
