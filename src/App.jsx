@@ -1,4 +1,9 @@
-import { RouterProvider, createBrowserRouter, createRoutesFromElements, Route } from "react-router-dom"
+import {
+  RouterProvider,
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+} from "react-router-dom"
 
 // Layout
 import Layout from "./components/pages/layout/Layout"
@@ -16,23 +21,22 @@ import Page404 from "./components/pages/Page404"
 
 // Auth
 import Login from "./components/pages/auth/Login"
+import PrivateRoute from "./components/pages/auth/PrivateRoute"
 
 // Admin
+import AdminLayout from "./components/pages/admin/AdminLayout"
 import AdminDashboard from "./components/pages/admin/AdminDashboard"
 import AdminPackages from "./components/pages/admin/AdminPackages"
 import AdminBookings from "./components/pages/admin/AdminBookings"
 import AdminCalendar from "./components/pages/admin/AdminCalendar"
-
-// Route Protection
-import PrivateRoute from "./components/pages/auth/PrivateRoute"
-
-// import UploadPackages from "./util/UploadPackages"
+import AdminUpcoming from "./components/pages/admin/AdminUpcoming"
+import AdminHistory from "./components/pages/admin/AdminHistory"
 
 function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route path="/" element={<Layout />}>
-        {/* Public */}
+        {/* Public Routes */}
         <Route index element={<Home />} />
         <Route path="packages" element={<Packages />} />
         <Route path="recommendation" element={<Recommendation />} />
@@ -44,41 +48,23 @@ function App() {
 
         {/* Auth */}
         <Route path="login" element={<Login />} />
-        {/* <Route path="upload" element={<UploadPackages />} /> */}
 
         {/* Admin (Protected) */}
         <Route
           path="admin"
           element={
             <PrivateRoute>
-              <AdminDashboard />
+              <AdminLayout />
             </PrivateRoute>
           }
-        />
-        <Route
-          path="admin/packages"
-          element={
-            <PrivateRoute>
-              <AdminPackages />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="admin/bookings"
-          element={
-            <PrivateRoute>
-              <AdminBookings />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="admin/calendar"
-          element={
-            <PrivateRoute>
-              <AdminCalendar />
-            </PrivateRoute>
-          }
-        />
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="packages" element={<AdminPackages />} />
+          <Route path="bookings" element={<AdminBookings />} />
+          <Route path="calendar" element={<AdminCalendar />} />
+          <Route path="upcoming" element={<AdminUpcoming />} />
+          <Route path="history" element={<AdminHistory />} />
+        </Route>
 
         {/* 404 */}
         <Route path="*" element={<Page404 />} />

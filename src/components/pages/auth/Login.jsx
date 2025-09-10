@@ -9,7 +9,6 @@ function Login() {
   const [error, setError] = useState("")
   const navigate = useNavigate()
 
-  // 🔹 Redirect if already logged in
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user && user.email === "robertrenbysanjuan@gmail.com") {
@@ -27,15 +26,15 @@ function Login() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
       const user = userCredential.user
 
-      // ✅ Allow only admin
-      const adminEmail = "robertrenbysanjuan@gmail.com"
-      if (user.email === adminEmail) {
+      if (user.email === "robertrenbysanjuan@gmail.com") {
         navigate("/admin")
       } else {
         setError("Access denied. Admin only.")
+        setPassword("") // clear password on failure
       }
     } catch (err) {
       setError("Invalid credentials. Please try again.")
+      setPassword("")
     }
   }
 
