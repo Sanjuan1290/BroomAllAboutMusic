@@ -1,4 +1,3 @@
-// src/components/pages/admin/AdminBookings.jsx
 import { useState, useEffect } from "react"
 import { db, auth } from "../../../firebase"
 import { collection, getDocs, updateDoc, doc } from "firebase/firestore"
@@ -8,6 +7,7 @@ const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"
 export default function AdminBookings() {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("")
 
   const fetchBookings = async () => {
     try {
@@ -50,11 +50,31 @@ export default function AdminBookings() {
     )
   }
 
-  const pending = bookings.filter((b) => b.status === "pending")
+  const pending = bookings.filter(
+    (b) =>
+      b.status === "pending" &&
+      (
+        b.name?.toLowerCase().includes(search.toLowerCase()) ||
+        b.email?.toLowerCase().includes(search.toLowerCase()) ||
+        b.phone?.toLowerCase().includes(search.toLowerCase())
+      )
+  )
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Pending Bookings</h1>
+
+      {/* 🔎 Search bar */}
+      <div className="flex justify-end">
+        <input
+          type="text"
+          placeholder="Search by name, email, or phone..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none w-80"
+        />
+      </div>
+
       <div className="overflow-x-auto bg-white rounded-xl shadow">
         <table className="w-full text-left border-collapse text-sm">
           <thead className="bg-gray-100">

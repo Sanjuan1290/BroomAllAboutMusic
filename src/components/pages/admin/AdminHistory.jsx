@@ -7,6 +7,7 @@ const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"
 export default function AdminHistory() {
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("")
 
   const fetchHistory = async () => {
     try {
@@ -28,13 +29,32 @@ export default function AdminHistory() {
   if (loading) return <p className="p-6 text-gray-500">Loading history...</p>
   if (!isAdmin) return <p className="p-6 text-red-600">Not authorized.</p>
 
-  const filtered = history.filter((h) =>
-    ["rejected", "completed", "cancelled"].includes(h.status)
+  // ✅ Search by name, email, or phone
+  const filtered = history.filter(
+    (h) =>
+      ["rejected", "completed", "cancelled"].includes(h.status) &&
+      (
+        h.name?.toLowerCase().includes(search.toLowerCase()) ||
+        h.email?.toLowerCase().includes(search.toLowerCase()) ||
+        h.phone?.toLowerCase().includes(search.toLowerCase())
+      )
   )
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Booking History</h1>
+
+      {/* 🔎 Search bar */}
+      <div className="flex justify-end">
+        <input
+          type="text"
+          placeholder="Search by name, email, or phone..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none w-80"
+        />
+      </div>
+
       <div className="overflow-x-auto bg-white rounded-xl shadow">
         <table className="w-full text-left border-collapse text-sm">
           <thead className="bg-gray-100">
@@ -54,7 +74,7 @@ export default function AdminHistory() {
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan="9" className="p-6 text-center text-gray-500">
-                  No history yet.
+                  No matching history found.
                 </td>
               </tr>
             ) : (

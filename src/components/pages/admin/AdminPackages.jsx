@@ -7,9 +7,10 @@ import {
   addDoc,
   deleteDoc,
   doc,
+  updateDoc,
 } from "firebase/firestore";
 
-const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"; // your admin email
+const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com";
 
 export default function AdminPackages() {
   const [packages, setPackages] = useState([]);
@@ -25,12 +26,14 @@ export default function AdminPackages() {
     inclusion: "",
     duration: "",
     recommendedEvent: "",
-    image: "", // <-- now just a URL
+    image: "",
     colorFrom: "#6366f1",
     colorTo: "#8b5cf6",
   });
 
-  // Fetch packages from Firestore
+  const [editId, setEditId] = useState(null); // track if editing
+
+  // Fetch packages
   const fetchPackages = async () => {
     try {
       const snap = await getDocs(collection(db, "packages"));
@@ -45,10 +48,10 @@ export default function AdminPackages() {
     fetchPackages();
   }, []);
 
-  // Add package (Firestore only)
-  const handleAdd = async () => {
+  // Add or update package
+  const handleSave = async () => {
     if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) {
-      return alert("You must be logged in as admin to add packages.");
+      return alert("You must be logged in as admin to manage packages.");
     }
 
     setLoading(true);
@@ -69,15 +72,22 @@ export default function AdminPackages() {
         recommendedEvent: newPackage.recommendedEvent
           ? newPackage.recommendedEvent.split(",").map((s) => s.trim())
           : [],
-        image: newPackage.image, // <-- directly save the URL
+        image: newPackage.image,
         colorFrom: newPackage.colorFrom || "#6366f1",
         colorTo: newPackage.colorTo || "#8b5cf6",
-        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      await addDoc(collection(db, "packages"), pkgToSave);
+      if (editId) {
+        await updateDoc(doc(db, "packages", editId), pkgToSave);
+        setEditId(null);
+      } else {
+        await addDoc(collection(db, "packages"), {
+          ...pkgToSave,
+          createdAt: new Date(),
+        });
+      }
 
-      // reset form
       setNewPackage({
         name: "",
         capacity: "",
@@ -95,8 +105,8 @@ export default function AdminPackages() {
 
       await fetchPackages();
     } catch (err) {
-      console.error("Error adding package:", err);
-      alert("Error adding package: " + err.message);
+      console.error("Error saving package:", err);
+      alert("Error saving package: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -112,6 +122,18 @@ export default function AdminPackages() {
       console.error("Error deleting package:", err);
       alert("Error deleting package: " + err.message);
     }
+  };
+
+  // Edit package
+  const handleEdit = (pkg) => {
+    setNewPackage({
+      ...pkg,
+      addOns: (pkg.addOns || []).join(", "),
+      inclusion: (pkg.inclusion || []).join(", "),
+      recommendedEvent: (pkg.recommendedEvent || []).join(", "),
+    });
+    setEditId(pkg.id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const isAdmin = auth.currentUser && auth.currentUser.email === ADMIN_EMAIL;
@@ -134,114 +156,203 @@ export default function AdminPackages() {
         )}
       </div>
 
-      {/* Add Package Form */}
+      {/* Add/Edit Package Form */}
       <div className="space-y-3 bg-white p-4 rounded-lg shadow">
-        <input
-          type="text"
-          placeholder="Package Name"
-          value={newPackage.name}
-          onChange={(e) => setNewPackage({ ...newPackage, name: e.target.value })}
-          className="border p-2 rounded w-full"
-        />
-
-        <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-sm font-medium mb-1">Package Name</label>
           <input
-            type="number"
-            placeholder="Capacity"
-            value={newPackage.capacity}
+            type="text"
+            value={newPackage.name}
             onChange={(e) =>
-              setNewPackage({ ...newPackage, capacity: e.target.value })
+              setNewPackage({ ...newPackage, name: e.target.value })
             }
             className="border p-2 rounded w-full"
-          />
-          <input
-            type="number"
-            placeholder="Price"
-            value={newPackage.price}
-            onChange={(e) =>
-              setNewPackage({ ...newPackage, price: e.target.value })
-            }
-            className="border p-2 rounded w-full"
+            placeholder="e.g. Basic Sound System"
           />
         </div>
 
-        <input
-          type="number"
-          placeholder="Power (W)"
-          value={newPackage.power}
-          onChange={(e) =>
-            setNewPackage({ ...newPackage, power: e.target.value })
-          }
-          className="border p-2 rounded w-full"
-        />
-        <input
-          type="text"
-          placeholder="Speakers"
-          value={newPackage.speakers}
-          onChange={(e) =>
-            setNewPackage({ ...newPackage, speakers: e.target.value })
-          }
-          className="border p-2 rounded w-full"
-        />
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-sm font-medium mb-1">Capacity</label>
+            <input
+              type="number"
+              value={newPackage.capacity}
+              onChange={(e) =>
+                setNewPackage({ ...newPackage, capacity: e.target.value })
+              }
+              className="border p-2 rounded w-full"
+              placeholder="e.g. 100"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Price (₱)</label>
+            <input
+              type="number"
+              value={newPackage.price}
+              onChange={(e) =>
+                setNewPackage({ ...newPackage, price: e.target.value })
+              }
+              className="border p-2 rounded w-full"
+              placeholder="e.g. 5000"
+            />
+          </div>
+        </div>
 
-        <input
-          type="text"
-          placeholder="AddOns (comma separated)"
-          value={newPackage.addOns}
-          onChange={(e) =>
-            setNewPackage({ ...newPackage, addOns: e.target.value })
-          }
-          className="border p-2 rounded w-full"
-        />
-        <input
-          type="text"
-          placeholder="Inclusion (comma separated)"
-          value={newPackage.inclusion}
-          onChange={(e) =>
-            setNewPackage({ ...newPackage, inclusion: e.target.value })
-          }
-          className="border p-2 rounded w-full"
-        />
-        <input
-          type="text"
-          placeholder="Recommended Events (comma separated)"
-          value={newPackage.recommendedEvent}
-          onChange={(e) =>
-            setNewPackage({
-              ...newPackage,
-              recommendedEvent: e.target.value,
-            })
-          }
-          className="border p-2 rounded w-full"
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">Power (Watts)</label>
+          <input
+            type="number"
+            value={newPackage.power}
+            onChange={(e) =>
+              setNewPackage({ ...newPackage, power: e.target.value })
+            }
+            className="border p-2 rounded w-full"
+            placeholder="e.g. 500"
+          />
+        </div>
 
-        <input
-          type="number"
-          placeholder="Duration (minutes)"
-          value={newPackage.duration}
-          onChange={(e) =>
-            setNewPackage({ ...newPackage, duration: e.target.value })
-          }
-          className="border p-2 rounded w-full"
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">Speakers</label>
+          <input
+            type="text"
+            value={newPackage.speakers}
+            onChange={(e) =>
+              setNewPackage({ ...newPackage, speakers: e.target.value })
+            }
+            className="border p-2 rounded w-full"
+            placeholder="e.g. JBL 2pcs"
+          />
+        </div>
 
-        <input
-          type="text"
-          placeholder="Image URL"
-          value={newPackage.image}
-          onChange={(e) =>
-            setNewPackage({ ...newPackage, image: e.target.value })
-          }
-          className="border p-2 rounded w-full"
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            AddOns <span className="text-gray-500">(comma separated)</span>
+          </label>
+          <input
+            type="text"
+            value={newPackage.addOns}
+            onChange={(e) =>
+              setNewPackage({ ...newPackage, addOns: e.target.value })
+            }
+            className="border p-2 rounded w-full"
+            placeholder="e.g. Microphone, Mixer"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Inclusions <span className="text-gray-500">(comma separated)</span>
+          </label>
+          <input
+            type="text"
+            value={newPackage.inclusion}
+            onChange={(e) =>
+              setNewPackage({ ...newPackage, inclusion: e.target.value })
+            }
+            className="border p-2 rounded w-full"
+            placeholder="e.g. Free delivery, Setup"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Recommended Events{" "}
+            <span className="text-gray-500">(comma separated)</span>
+          </label>
+          <input
+            type="text"
+            value={newPackage.recommendedEvent}
+            onChange={(e) =>
+              setNewPackage({ ...newPackage, recommendedEvent: e.target.value })
+            }
+            className="border p-2 rounded w-full"
+            placeholder="e.g. Birthday, Wedding"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Duration (minutes)
+          </label>
+          <input
+            type="number"
+            value={newPackage.duration}
+            onChange={(e) =>
+              setNewPackage({ ...newPackage, duration: e.target.value })
+            }
+            className="border p-2 rounded w-full"
+            placeholder="e.g. 120"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Image URL
+            <span className="block text-xs text-gray-500 mt-1">
+              Upload your image on{" "}
+              <a
+                href="https://imgur.com/upload"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline"
+              >
+                Imgur
+              </a>
+              . After upload, right-click the image → <b>Copy Image Address</b>{" "}
+              and paste it here. The link must end in <code>.jpg</code>,{" "}
+              <code>.png</code>, or <code>.gif</code>.
+            </span>
+          </label>
+          <input
+            type="text"
+            value={newPackage.image}
+            onChange={(e) =>
+              setNewPackage({ ...newPackage, image: e.target.value })
+            }
+            className="border p-2 rounded w-full"
+            placeholder="https://i.imgur.com/xxxxxxx.jpg"
+          />
+          {newPackage.image && (
+            <img
+              src={newPackage.image}
+              alt="Preview"
+              className="mt-2 h-32 object-contain rounded border"
+            />
+          )}
+        </div>
 
         <button
-          onClick={handleAdd}
+          onClick={handleSave}
           disabled={loading || !isAdmin}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? "Adding..." : "Add Package"}
+          {loading ? "Saving..." : editId ? "Update Package" : "Add Package"}
         </button>
+
+        {editId && (
+          <button
+            onClick={() => {
+              setEditId(null);
+              setNewPackage({
+                name: "",
+                capacity: "",
+                price: "",
+                power: "",
+                speakers: "",
+                addOns: "",
+                inclusion: "",
+                duration: "",
+                recommendedEvent: "",
+                image: "",
+                colorFrom: "#6366f1",
+                colorTo: "#8b5cf6",
+              });
+            }}
+            className="ml-2 bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+          >
+            Cancel
+          </button>
+        )}
       </div>
 
       {/* Packages List */}
@@ -256,7 +367,7 @@ export default function AdminPackages() {
                 <img
                   src={pkg.image}
                   alt={pkg.name}
-                  className="h-40 w-full object-cover rounded"
+                  className="h-40 w-full object-contain rounded"
                 />
               )}
               <h2 className="text-xl font-bold mt-2">{pkg.name}</h2>
@@ -272,6 +383,12 @@ export default function AdminPackages() {
 
             {isAdmin && (
               <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => handleEdit(pkg)}
+                  className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+                >
+                  Edit
+                </button>
                 <button
                   onClick={() => handleDelete(pkg.id)}
                   className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
