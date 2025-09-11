@@ -1,4 +1,4 @@
-﻿import { useState } from "react"
+﻿import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import {
   startOfMonth,
@@ -10,20 +10,35 @@ import {
   addMonths,
   subMonths,
 } from "date-fns"
-
-const bookedDates = ["2025-09-15", "2025-09-24", "2025-10-01"]
+import { db } from "../../firebase"
+import { collection, getDocs } from "firebase/firestore"
 
 function Availability() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [unavailableDates, setUnavailableDates] = useState([])
+
+  // Fetch unavailable dates from Firestore
+  const fetchUnavailableDates = async () => {
+    try {
+      const snap = await getDocs(collection(db, "unavailableDates"))
+      setUnavailableDates(snap.docs.map((d) => d.id)) // store IDs as YYYY-MM-DD
+    } catch (err) {
+      console.error("Error fetching unavailable dates:", err)
+    }
+  }
+
+  useEffect(() => {
+    fetchUnavailableDates()
+  }, [])
+
+  const isUnavailable = (date) =>
+    unavailableDates.includes(format(date, "yyyy-MM-dd"))
 
   // Month days
   const monthStart = startOfMonth(currentMonth)
   const monthEnd = endOfMonth(currentMonth)
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
-
-  const isBooked = (date) =>
-    bookedDates.includes(format(date, "yyyy-MM-dd"))
 
   return (
     <div className="space-y-10">
@@ -70,23 +85,23 @@ function Availability() {
           {/* Days */}
           <div className="grid grid-cols-7 gap-2 mt-2">
             {days.map((day) => {
-              const booked = isBooked(day)
+              const unavailable = isUnavailable(day)
               const selected = selectedDate && isSameDay(day, selectedDate)
 
               return (
                 <button
                   key={day}
-                  onClick={() => !booked && setSelectedDate(day)}
+                  onClick={() => !unavailable && setSelectedDate(day)}
                   className={`aspect-square flex items-center justify-center rounded-lg border text-sm font-medium transition-all duration-200
                     ${
-                      booked
+                      unavailable
                         ? "bg-red-100 text-red-600 border-red-300 cursor-not-allowed"
                         : "bg-green-50 hover:bg-green-100 border-green-300"
                     }
                     ${selected ? "ring-2 ring-blue-500 bg-blue-50" : ""}
                     ${isToday(day) ? "font-bold text-blue-700 border-blue-400" : ""}
                   `}
-                  disabled={booked}
+                  disabled={unavailable}
                 >
                   {format(day, "d")}
                 </button>
@@ -105,7 +120,7 @@ function Availability() {
                   <span className="font-medium">Selected Date:</span>{" "}
                   {format(selectedDate, "MMMM d, yyyy")}
                 </p>
-                {isBooked(selectedDate) ? (
+                {isUnavailable(selectedDate) ? (
                   <p className="text-red-600 font-medium mt-2">
                     ❌ Sorry, this date is already booked.
                   </p>
@@ -116,7 +131,7 @@ function Availability() {
                 )}
               </div>
 
-              {!isBooked(selectedDate) && (
+              {!isUnavailable(selectedDate) && (
                 <Link
                   to={`/packages`}
                   className="block w-full px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-center text-white font-medium rounded-lg hover:opacity-90 transition"
