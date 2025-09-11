@@ -107,25 +107,39 @@ function Checkout() {
         <div className="border rounded-xl p-6 shadow-sm bg-white space-y-4">
           <h2 className="text-xl font-semibold text-gray-800">Package Summary</h2>
           <p className="text-lg font-medium text-gray-700">{pkg.name}</p>
-          <p className="text-gray-600">{pkg.capacity}</p>
-          <p className="text-2xl font-bold text-indigo-600">{pkg.price}</p>
+          <p className="text-gray-600">Capacity: {pkg.capacity} people</p>
+          <p className="text-2xl font-bold text-indigo-600">
+            ₱{pkg.price?.toLocaleString()}
+          </p>
 
           <div className="mt-4 space-y-2 text-gray-700">
-            <p><strong>Duration:</strong> {pkg.duration}</p>
-            <p><strong>Total Power:</strong> {pkg.power}</p>
+            <p><strong>Duration:</strong> {pkg.duration} hrs</p>
+            <p><strong>Total Power:</strong> {pkg.power}W</p>
             <p><strong>Speakers:</strong> {pkg.speakers}</p>
-            <p><strong>Microphones:</strong> {pkg.microphones}</p>
-            <p><strong>Subwoofers:</strong> {pkg.subwoofers}</p>
-            <p><strong>Lighting:</strong> {pkg.lighting}</p>
-            <p><strong>Technician:</strong> {pkg.technician}</p>
+            {pkg.recommendedEvent && (
+              <p><strong>Recommended For:</strong> {pkg.recommendedEvent.join(", ")}</p>
+            )}
           </div>
 
-          {pkg.extras && (
+          {/* Inclusions */}
+          {pkg.inclusion && (
             <div className="mt-4">
-              <h3 className="font-medium text-gray-700">Extras:</h3>
+              <h3 className="font-medium text-gray-700">Inclusions:</h3>
               <ul className="list-disc pl-5 text-gray-600 space-y-1">
-                {pkg.extras.map((extra, idx) => (
-                  <li key={idx}>{extra}</li>
+                {pkg.inclusion.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Add-ons */}
+          {pkg.addOns && (
+            <div className="mt-4">
+              <h3 className="font-medium text-gray-700">Available Add-Ons:</h3>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1">
+                {pkg.addOns.map((item, idx) => (
+                  <li key={idx}>{item}</li>
                 ))}
               </ul>
             </div>
@@ -242,17 +256,21 @@ function Checkout() {
                 <h3 className="text-lg font-semibold text-gray-800">
                   {altPkg.name}
                 </h3>
-                <p className="text-gray-600">{altPkg.capacity}</p>
+                <p className="text-gray-600">Capacity: {altPkg.capacity} people</p>
                 <p className="text-indigo-600 font-bold text-lg">
-                  {altPkg.price}
+                  ₱{altPkg.price?.toLocaleString()}
                 </p>
 
                 <Link
                   to={`/checkout/${altPkg.id}`}
+                  onClick={() => {
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  }}
                   className="mt-4 inline-block text-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition"
                 >
                   Select Package
                 </Link>
+
               </div>
             ))}
           </div>

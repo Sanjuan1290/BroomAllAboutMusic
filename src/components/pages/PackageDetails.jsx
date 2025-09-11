@@ -64,42 +64,60 @@ function PackageDetails() {
           {pkg.name}
         </h1>
         {pkg.capacity && (
-          <p className="mt-2 text-gray-600">{pkg.capacity}</p>
+          <p className="mt-2 text-gray-600">
+            Capacity: {pkg.capacity} people
+          </p>
         )}
-        <p className="mt-4 text-2xl font-bold text-gray-900">{pkg.price}</p>
+        <p className="mt-4 text-2xl font-bold text-gray-900">
+          ₱{pkg.price?.toLocaleString()}
+        </p>
       </div>
 
       {/* Package Specs */}
       <div className="p-6 border rounded-2xl shadow-sm bg-white space-y-4">
         <h2 className="text-xl font-semibold text-gray-900">Package Details</h2>
         <ul className="space-y-2 text-gray-700">
-          {pkg.duration && <li><strong>Duration:</strong> {pkg.duration}</li>}
-          {pkg.power && <li><strong>Total Power:</strong> {pkg.power}</li>}
+          {pkg.duration && <li><strong>Duration:</strong> {pkg.duration} hrs</li>}
+          {pkg.power && <li><strong>Total Power:</strong> {pkg.power}W</li>}
           {pkg.speakers && <li><strong>Speakers:</strong> {pkg.speakers}</li>}
-          {pkg.microphones && <li><strong>Microphones:</strong> {pkg.microphones}</li>}
-          {pkg.subwoofers && <li><strong>Subwoofers:</strong> {pkg.subwoofers}</li>}
-          {pkg.lighting && <li><strong>Lighting:</strong> {pkg.lighting}</li>}
-          {pkg.technician && <li><strong>Technician:</strong> {pkg.technician}</li>}
-          {pkg.recommendedEvent && (
+          {pkg.recommendedEvent && pkg.recommendedEvent.length > 0 && (
             <li className="text-emerald-600 font-medium">
-              <strong>Recommended For:</strong> {pkg.recommendedEvent}
+              <strong>Recommended For:</strong> {pkg.recommendedEvent.join(", ")}
             </li>
           )}
         </ul>
       </div>
 
-      {/* Extras */}
-      {pkg.extras && pkg.extras.length > 0 && (
+      {/* Inclusions */}
+      {pkg.inclusion && pkg.inclusion.length > 0 && (
         <div className="p-6 border rounded-2xl shadow-sm bg-white">
-          <h2 className="text-xl font-semibold text-gray-900">Extras</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Inclusions</h2>
           <ul className="mt-4 space-y-3 text-gray-700">
-            {pkg.extras.map((extra, index) => (
+            {pkg.inclusion.map((item, index) => (
               <li
                 key={index}
                 className="flex items-center space-x-2 border-b pb-2 last:border-none"
               >
                 <span className="text-lg">✅</span>
-                <span>{extra}</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Add-Ons */}
+      {pkg.addOns && pkg.addOns.length > 0 && (
+        <div className="p-6 border rounded-2xl shadow-sm bg-white">
+          <h2 className="text-xl font-semibold text-gray-900">Available Add-Ons</h2>
+          <ul className="mt-4 space-y-3 text-gray-700">
+            {pkg.addOns.map((item, index) => (
+              <li
+                key={index}
+                className="flex items-center space-x-2 border-b pb-2 last:border-none"
+              >
+                <span className="text-lg">➕</span>
+                <span>{item}</span>
               </li>
             ))}
           </ul>

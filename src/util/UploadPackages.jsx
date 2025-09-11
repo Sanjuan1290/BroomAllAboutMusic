@@ -6,7 +6,13 @@ function UploadPackages() {
   const handleUpload = async () => {
     try {
       for (const pkg of packages) {
-        await setDoc(doc(collection(db, "packages"), String(pkg.id)), pkg)
+        // Firestore will keep power as a number if it's a number here
+        const cleanPkg = {
+          ...pkg,
+          power: Number(pkg.power), // enforce number
+        }
+
+        await setDoc(doc(collection(db, "packages"), String(pkg.id)), cleanPkg)
         console.log(`✅ Uploaded package: ${pkg.name}`)
       }
       alert("Packages uploaded successfully!")

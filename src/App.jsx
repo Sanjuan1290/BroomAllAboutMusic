@@ -33,6 +33,9 @@ import AdminCalendar from "./components/pages/admin/AdminCalendar"
 import AdminUpcoming from "./components/pages/admin/AdminUpcoming"
 import AdminHistory from "./components/pages/admin/AdminHistory"
 
+// import UploadPackages from "./util/UploadPackages"
+
+
 function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
@@ -47,6 +50,7 @@ function App() {
         <Route path="checkout/:id" element={<Checkout />} />
         <Route path="contact" element={<Contact />} />
         <Route path="policy" element={<Policy />} />
+        {/* <Route path="upload" element={<UploadPackages />} /> */}
 
         {/* Auth */}
         <Route path="login" element={<Login />} />

@@ -50,7 +50,7 @@ function Packages() {
           >
             {/* Image */}
             <div
-              className="relative h-40 w-full overflow-hidden"
+              className="relative h-40 w-full overflow-hidden flex items-center justify-center"
               style={{
                 background: pkg.colorFrom
                   ? `linear-gradient(to right, ${pkg.colorFrom}, ${pkg.colorTo})`
@@ -60,12 +60,12 @@ function Packages() {
               <img
                 src={pkg.image}
                 alt={pkg.name}
-                className="h-full w-full object-cover mix-blend-multiply"
+                className="h-full w-full object-contain mix-blend-multiply"
               />
               {/* Recommended Event Badge */}
-              {pkg.recommendedEvent && (
+              {pkg.recommendedEvent && pkg.recommendedEvent.length > 0 && (
                 <span className="absolute top-3 left-3 bg-black/70 text-white text-xs px-3 py-1 rounded-full">
-                  🎉 {pkg.recommendedEvent}
+                  🎉 {pkg.recommendedEvent[0]}
                 </span>
               )}
             </div>
@@ -73,10 +73,32 @@ function Packages() {
             {/* Content */}
             <div className="p-6 flex flex-col flex-1 justify-between">
               <h3 className="text-xl font-bold text-gray-900">{pkg.name}</h3>
-              <p className="mt-3 text-gray-600 text-sm">{pkg.description}</p>
+
+              <ul className="mt-4 space-y-2 text-sm text-gray-600">
+                <li>👥 Capacity: {pkg.capacity} people</li>
+                <li>🔊 Power: {pkg.power}W</li>
+                <li>🎤 Speakers: {pkg.speakers}</li>
+                <li>⏳ Duration: {pkg.duration} hrs</li>
+              </ul>
+
+              {/* Show inclusions */}
+              {pkg.inclusion && pkg.inclusion.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="font-semibold text-gray-800 text-sm">
+                    Inclusions:
+                  </h4>
+                  <ul className="list-disc list-inside text-gray-600 text-sm">
+                    {pkg.inclusion.slice(0, 3).map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <div className="mt-6">
-                <p className="text-2xl font-bold text-gray-900">{pkg.price}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  ₱{pkg.price.toLocaleString()}
+                </p>
                 <a
                   href={`/packages/${pkg.id}`}
                   className="mt-4 inline-block w-full text-center px-4 py-2 rounded-lg text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:opacity-90 transition"

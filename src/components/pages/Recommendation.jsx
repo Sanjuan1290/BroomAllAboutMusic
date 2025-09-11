@@ -127,6 +127,14 @@ function Guests({ count }) {
   ))
 }
 
+// 🛠 Helper: parse package capacity
+const parseCapacity = (cap) => {
+  if (!cap) return Infinity
+  if (typeof cap === "number") return cap
+  const match = String(cap).match(/\d+/g)
+  return match ? parseInt(match.pop(), 10) : Infinity
+}
+
 function Recommendation() {
   const [guests, setGuests] = useState("")
   const [warning, setWarning] = useState("")
@@ -165,24 +173,15 @@ function Recommendation() {
       return
     }
 
-    const recs = packages.filter((pkg) => {
-      const match = pkg.capacity?.match(/\d+/g)
-      const maxGuests = match ? parseInt(match.pop(), 10) : Infinity
-      return guestNum <= maxGuests
-    })
-
-    recs.sort((a, b) => {
-      const maxA = parseInt(a.capacity?.match(/\d+/g)?.pop() ?? "99999", 10)
-      const maxB = parseInt(b.capacity?.match(/\d+/g)?.pop() ?? "99999", 10)
-      return maxA - maxB
-    })
+    const recs = packages.filter((pkg) => guestNum <= parseCapacity(pkg.capacity))
+    recs.sort((a, b) => parseCapacity(a.capacity) - parseCapacity(b.capacity))
 
     setRecommendations(recs)
     if (recs.length > 0) setSelectedPackage(recs[0])
   }, [guests, packages])
 
   const speakerRange = selectedPackage
-    ? parseInt(selectedPackage.capacity?.match(/\d+/g)?.pop() ?? "10", 10) / 20
+    ? parseCapacity(selectedPackage.capacity) / 20
     : 10
 
   return (
@@ -271,7 +270,10 @@ function Recommendation() {
                       : "linear-gradient(to right, #6366f1, #8b5cf6)",
                   }}
                   whileHover={{ scale: 1.03 }}
-                  onClick={() => setSelectedPackage(pkg)}
+                  onClick={() => {
+                    setSelectedPackage(pkg)
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  }}
                 >
                   <h3 className="text-2xl font-bold flex items-center gap-2">
                     <Star className="w-5 h-5 text-yellow-300" />
@@ -283,21 +285,35 @@ function Recommendation() {
                   </p>
                   <p className="mt-2 flex items-center gap-2 font-medium text-lg">
                     <CreditCard className="w-4 h-4" />
-                    {pkg.price}
+                    ₱{Number(pkg.price).toLocaleString()}
                   </p>
                   {pkg.recommendedEvent && (
                     <p className="mt-2 flex items-center gap-2 italic">
                       <Sparkles className="w-4 h-4" />
-                      Perfect for: {pkg.recommendedEvent}
+                      Perfect for:{" "}
+                      {Array.isArray(pkg.recommendedEvent)
+                        ? pkg.recommendedEvent.join(", ")
+                        : pkg.recommendedEvent}
                     </p>
                   )}
-                  {pkg.extras && (
+                  {pkg.addOns && (
                     <ul className="mt-4 list-disc list-inside space-y-1">
-                      {pkg.extras.map((extra, i) => (
+                      {pkg.addOns.map((extra, i) => (
                         <li key={i}>{extra}</li>
                       ))}
                     </ul>
                   )}
+
+                  {/* CTA */}
+                  <a
+                    href={`/checkout/${pkg.id}`}
+                    className="mt-6 inline-block px-4 py-2 bg-white text-indigo-700 font-semibold rounded-lg shadow hover:bg-gray-100 transition"
+                    onClick={() =>
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }
+                  >
+                    Book Now
+                  </a>
                 </motion.div>
               ))}
             </motion.div>
