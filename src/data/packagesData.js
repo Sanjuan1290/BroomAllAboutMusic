@@ -3,7 +3,7 @@ const packages = [
     id: 1,
     name: "Basic Package",
     capacity: "Up to 50 guests",
-    price: "₱5,000",
+    price: "₱5,000", 
     duration: "4 hours rental",
     power: "600W total output",
     speakers: "2x 12-inch Active Speakers",
