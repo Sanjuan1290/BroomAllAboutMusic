@@ -1,42 +1,44 @@
-﻿import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth"
-import { auth } from "../../../firebase"
+﻿import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { auth } from "../../../firebase";
+
+const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"; // centralize here
 
 function Login() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const navigate = useNavigate()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && user.email === "robertrenbysanjuan@gmail.com") {
-        navigate("/admin", { replace: true })
+      if (user?.email === ADMIN_EMAIL) {
+        navigate("/admin", { replace: true });
       }
-    })
-    return () => unsubscribe()
-  }, [navigate])
+    });
+    return () => unsubscribe();
+  }, [navigate]);
 
   const handleLogin = async (e) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password)
-      const user = userCredential.user
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
 
-      if (user.email === "robertrenbysanjuan@gmail.com") {
-        navigate("/admin")
+      if (user.email === ADMIN_EMAIL) {
+        navigate("/admin", { replace: true });
       } else {
-        setError("Access denied. Admin only.")
-        setPassword("") // clear password on failure
+        setError("Access denied. Admin only.");
+        setPassword("");
       }
     } catch (err) {
-      setError("Invalid credentials. Please try again.")
-      setPassword("")
+      console.error("Login error:", err);
+      setError("Invalid credentials. Please try again.");
+      setPassword("");
     }
-  }
+  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -78,7 +80,7 @@ function Login() {
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-export default Login
+export default Login;

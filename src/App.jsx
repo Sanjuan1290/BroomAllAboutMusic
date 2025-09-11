@@ -3,38 +3,37 @@ import {
   createBrowserRouter,
   createRoutesFromElements,
   Route,
-} from "react-router-dom"
+} from "react-router-dom";
 
 // Layout
-import Layout from "./components/pages/layout/Layout"
+import Layout from "./components/pages/layout/Layout";
 
 // Public pages
-import Home from "./components/pages/Home"
-import About from "./components/pages/About"
-import Packages from "./components/pages/Packages"
-import Recommendation from "./components/pages/Recommendation"
-import Availability from "./components/pages/Availability"
-import PackageDetails from "./components/pages/PackageDetails"
-import Checkout from "./components/pages/Checkout"
-import Contact from "./components/pages/Contact"
-import Policy from "./components/pages/Policy"
-import Page404 from "./components/pages/Page404"
+import Home from "./components/pages/Home";
+import About from "./components/pages/About";
+import Packages from "./components/pages/Packages";
+import Recommendation from "./components/pages/Recommendation";
+import Availability from "./components/pages/Availability";
+import PackageDetails from "./components/pages/PackageDetails";
+import Checkout from "./components/pages/Checkout";
+import Contact from "./components/pages/Contact";
+import Policy from "./components/pages/Policy";
+import Page404 from "./components/pages/Page404";
 
 // Auth
-import Login from "./components/pages/auth/Login"
-import PrivateRoute from "./components/pages/auth/PrivateRoute"
+import Login from "./components/pages/auth/Login";
+import PrivateRoute from "./components/pages/auth/PrivateRoute";
 
 // Admin
-import AdminLayout from "./components/pages/admin/AdminLayout"
-import AdminDashboard from "./components/pages/admin/AdminDashboard"
-import AdminPackages from "./components/pages/admin/AdminPackages"
-import AdminBookings from "./components/pages/admin/AdminBookings"
-import AdminCalendar from "./components/pages/admin/AdminCalendar"
-import AdminUpcoming from "./components/pages/admin/AdminUpcoming"
-import AdminHistory from "./components/pages/admin/AdminHistory"
+import AdminLayout from "./components/pages/admin/AdminLayout";
+import AdminDashboard from "./components/pages/admin/AdminDashboard";
+import AdminPackages from "./components/pages/admin/AdminPackages";
+import AdminBookings from "./components/pages/admin/AdminBookings";
+import AdminCalendar from "./components/pages/admin/AdminCalendar";
+import AdminUpcoming from "./components/pages/admin/AdminUpcoming";
+import AdminHistory from "./components/pages/admin/AdminHistory";
 
 // import UploadPackages from "./util/UploadPackages"
-
 
 function App() {
   const router = createBrowserRouter(
@@ -76,9 +75,9 @@ function App() {
         <Route path="*" element={<Page404 />} />
       </Route>
     )
-  )
+  );
 
-  return <RouterProvider router={router} />
+  return <RouterProvider router={router} />;
 }
 
-export default App
+export default App;
