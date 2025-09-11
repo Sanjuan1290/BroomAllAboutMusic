@@ -1,12 +1,7 @@
 // src/components/pages/admin/AdminBookings.jsx
 import { useState, useEffect } from "react"
 import { db, auth } from "../../../firebase"
-import {
-  collection,
-  getDocs,
-  updateDoc,
-  doc,
-} from "firebase/firestore"
+import { collection, getDocs, updateDoc, doc } from "firebase/firestore"
 
 const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"
 
@@ -44,10 +39,7 @@ export default function AdminBookings() {
 
   const isAdmin = auth.currentUser && auth.currentUser.email === ADMIN_EMAIL
 
-  if (loading) {
-    return <p className="p-6 text-gray-500">Loading bookings...</p>
-  }
-
+  if (loading) return <p className="p-6 text-gray-500">Loading bookings...</p>
   if (!isAdmin) {
     return (
       <div className="p-6 text-center">
@@ -58,10 +50,11 @@ export default function AdminBookings() {
     )
   }
 
+  const pending = bookings.filter((b) => b.status === "pending")
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Manage Bookings</h1>
-
+      <h1 className="text-3xl font-bold">Pending Bookings</h1>
       <div className="overflow-x-auto bg-white rounded-xl shadow">
         <table className="w-full text-left border-collapse text-sm">
           <thead className="bg-gray-100">
@@ -79,14 +72,14 @@ export default function AdminBookings() {
             </tr>
           </thead>
           <tbody>
-            {bookings.length === 0 ? (
+            {pending.length === 0 ? (
               <tr>
                 <td colSpan="10" className="p-6 text-center text-gray-500">
-                  No bookings yet.
+                  No pending bookings.
                 </td>
               </tr>
             ) : (
-              bookings.map((b) => (
+              pending.map((b) => (
                 <tr key={b.id} className="border-t">
                   <td className="p-3 font-medium">{b.name}</td>
                   <td className="p-3">{b.email}</td>
