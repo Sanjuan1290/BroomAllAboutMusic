@@ -10,6 +10,7 @@ import Layout from "./components/pages/layout/Layout"
 
 // Public pages
 import Home from "./components/pages/Home"
+import About from "./components/pages/About"
 import Packages from "./components/pages/Packages"
 import Recommendation from "./components/pages/Recommendation"
 import Availability from "./components/pages/Availability"
@@ -38,6 +39,7 @@ function App() {
       <Route path="/" element={<Layout />}>
         {/* Public Routes */}
         <Route index element={<Home />} />
+        <Route path="about" element={<About />} />
         <Route path="packages" element={<Packages />} />
         <Route path="recommendation" element={<Recommendation />} />
         <Route path="availability" element={<Availability />} />

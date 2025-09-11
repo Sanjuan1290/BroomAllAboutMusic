@@ -37,7 +37,7 @@ function Contact() {
           <p className="text-gray-700">
             <span className="font-semibold">📧 Email:</span>{" "}
             info@broomallmusic.com
-          </p>
+          </p> 
         </div>
 
         {/* Contact Form */}
@@ -91,6 +91,8 @@ function Contact() {
             Send Message
           </button>
         </form>
+
+        <iframe className="col-span-2" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d20495.35581969786!2d120.93025975!3d14.338781249999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397d58cc7060449%3A0xba193d41bd00d36b!2sPCU%20Dasmari%C3%B1as%20College%20Building!5e1!3m2!1sen!2sph!4v1757570128903!5m2!1sen!2sph" width="100%" height="450" style={{border:0}} allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" ></iframe>
       </div>
     </div>
   )
