@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom"
-import { LogOut, Package, ClipboardList, Calendar, Clock, History } from "lucide-react"
+import { LogOut } from "lucide-react"
 import { auth } from "../../../firebase"
 import { signOut } from "firebase/auth"
 
@@ -11,6 +11,12 @@ export default function AdminLayout() {
     navigate("/login")
   }
 
+  // ✅ Active link style
+  const linkClass = ({ isActive }) =>
+    `block hover:text-yellow-300 ${
+      isActive ? "font-bold underline text-yellow-300" : ""
+    }`
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -18,22 +24,22 @@ export default function AdminLayout() {
         <h1 className="text-2xl font-bold">Admin Panel</h1>
 
         <nav className="space-y-3">
-          <NavLink to="/admin" end className="block hover:text-yellow-300">
+          <NavLink to="/admin" end className={linkClass}>
             Dashboard
           </NavLink>
-          <NavLink to="/admin/packages" className="block hover:text-yellow-300">
+          <NavLink to="/admin/packages" className={linkClass}>
             Packages
           </NavLink>
-          <NavLink to="/admin/bookings" className="block hover:text-yellow-300">
+          <NavLink to="/admin/bookings" className={linkClass}>
             Bookings
           </NavLink>
-          <NavLink to="/admin/calendar" className="block hover:text-yellow-300">
+          <NavLink to="/admin/calendar" className={linkClass}>
             Calendar
           </NavLink>
-          <NavLink to="/admin/upcoming" className="block hover:text-yellow-300">
+          <NavLink to="/admin/upcoming" className={linkClass}>
             Upcoming
           </NavLink>
-          <NavLink to="/admin/history" className="block hover:text-yellow-300">
+          <NavLink to="/admin/history" className={linkClass}>
             History
           </NavLink>
         </nav>

@@ -16,6 +16,7 @@ import Recommendation from "./components/pages/Recommendation";
 import Availability from "./components/pages/Availability";
 import PackageDetails from "./components/pages/PackageDetails";
 import Checkout from "./components/pages/Checkout";
+import ThankYou from "./components/pages/ThankYou";
 import Contact from "./components/pages/Contact";
 import Policy from "./components/pages/Policy";
 import Page404 from "./components/pages/Page404";
@@ -47,6 +48,7 @@ function App() {
         <Route path="availability" element={<Availability />} />
         <Route path="packages/:id" element={<PackageDetails />} />
         <Route path="checkout/:id" element={<Checkout />} />
+        <Route path="thank-you" element={<ThankYou />} />
         <Route path="contact" element={<Contact />} />
         <Route path="policy" element={<Policy />} />
         {/* <Route path="upload" element={<UploadPackages />} /> */}
