@@ -3,11 +3,13 @@ import { db, auth } from "../../../firebase"
 import { collection, getDocs, updateDoc, doc } from "firebase/firestore"
 
 const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"
+const ITEMS_PER_PAGE = 10
 
 export default function AdminBookings() {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
 
   const fetchBookings = async () => {
     try {
@@ -50,6 +52,7 @@ export default function AdminBookings() {
     )
   }
 
+  // 🔎 Filter bookings
   const pending = bookings.filter(
     (b) =>
       b.status === "pending" &&
@@ -59,6 +62,11 @@ export default function AdminBookings() {
         b.phone?.toLowerCase().includes(search.toLowerCase())
       )
   )
+
+  // 📑 Pagination logic
+  const totalPages = Math.ceil(pending.length / ITEMS_PER_PAGE)
+  const startIndex = (page - 1) * ITEMS_PER_PAGE
+  const displayed = pending.slice(startIndex, startIndex + ITEMS_PER_PAGE)
 
   return (
     <div className="space-y-6">
@@ -70,11 +78,15 @@ export default function AdminBookings() {
           type="text"
           placeholder="Search by name, email, or phone..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value)
+            setPage(1) // reset to first page on search
+          }}
           className="px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none w-80"
         />
       </div>
 
+      {/* 📋 Bookings Table */}
       <div className="overflow-x-auto bg-white rounded-xl shadow">
         <table className="w-full text-left border-collapse text-sm">
           <thead className="bg-gray-100">
@@ -92,14 +104,14 @@ export default function AdminBookings() {
             </tr>
           </thead>
           <tbody>
-            {pending.length === 0 ? (
+            {displayed.length === 0 ? (
               <tr>
                 <td colSpan="10" className="p-6 text-center text-gray-500">
                   No pending bookings.
                 </td>
               </tr>
             ) : (
-              pending.map((b) => (
+              displayed.map((b) => (
                 <tr key={b.id} className="border-t">
                   <td className="p-3 font-medium">{b.name}</td>
                   <td className="p-3">{b.email}</td>
@@ -130,6 +142,29 @@ export default function AdminBookings() {
           </tbody>
         </table>
       </div>
+
+      {/* ⬅️➡️ Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center mt-4">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+            className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage((p) => p + 1)}
+            className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   )
 }

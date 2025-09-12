@@ -3,11 +3,13 @@ import { db, auth } from "../../../firebase"
 import { collection, getDocs } from "firebase/firestore"
 
 const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"
+const ITEMS_PER_PAGE = 10
 
 export default function AdminHistory() {
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
 
   const fetchHistory = async () => {
     try {
@@ -29,7 +31,7 @@ export default function AdminHistory() {
   if (loading) return <p className="p-6 text-gray-500">Loading history...</p>
   if (!isAdmin) return <p className="p-6 text-red-600">Not authorized.</p>
 
-  // ✅ Search by name, email, or phone
+  // ✅ Filter by status + search
   const filtered = history.filter(
     (h) =>
       ["rejected", "completed", "cancelled"].includes(h.status) &&
@@ -39,6 +41,11 @@ export default function AdminHistory() {
         h.phone?.toLowerCase().includes(search.toLowerCase())
       )
   )
+
+  // 📑 Pagination
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
+  const startIndex = (page - 1) * ITEMS_PER_PAGE
+  const displayed = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE)
 
   return (
     <div className="space-y-6">
@@ -50,11 +57,15 @@ export default function AdminHistory() {
           type="text"
           placeholder="Search by name, email, or phone..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value)
+            setPage(1) // reset to page 1 on search
+          }}
           className="px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none w-80"
         />
       </div>
 
+      {/* 📋 History Table */}
       <div className="overflow-x-auto bg-white rounded-xl shadow">
         <table className="w-full text-left border-collapse text-sm">
           <thead className="bg-gray-100">
@@ -71,14 +82,14 @@ export default function AdminHistory() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {displayed.length === 0 ? (
               <tr>
                 <td colSpan="9" className="p-6 text-center text-gray-500">
                   No matching history found.
                 </td>
               </tr>
             ) : (
-              filtered.map((h) => (
+              displayed.map((h) => (
                 <tr key={h.id} className="border-t">
                   <td className="p-3">{h.name}</td>
                   <td className="p-3">{h.email}</td>
@@ -105,6 +116,29 @@ export default function AdminHistory() {
           </tbody>
         </table>
       </div>
+
+      {/* ⬅️➡️ Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center mt-4">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+            className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage((p) => p + 1)}
+            className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   )
 }
