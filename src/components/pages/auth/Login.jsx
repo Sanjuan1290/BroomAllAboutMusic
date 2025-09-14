@@ -4,6 +4,7 @@ import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../../firebase";
 
 const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"; // centralize here
+const MAX_SESSION = 2 * 60 * 60 * 1000; // 2 hours in ms
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -14,7 +15,14 @@ function Login() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user?.email === ADMIN_EMAIL) {
-        navigate("/admin", { replace: true });
+        // if already logged in & not expired
+        const loginTime = localStorage.getItem("adminLoginTime");
+        if (loginTime && Date.now() - parseInt(loginTime, 10) < MAX_SESSION) {
+          navigate("/admin", { replace: true });
+        } else {
+          auth.signOut();
+          localStorage.removeItem("adminLoginTime");
+        }
       }
     });
     return () => unsubscribe();
@@ -28,6 +36,8 @@ function Login() {
       const { user } = await signInWithEmailAndPassword(auth, email, password);
 
       if (user.email === ADMIN_EMAIL) {
+        // set 2 hour session timestamp
+        localStorage.setItem("adminLoginTime", Date.now().toString());
         navigate("/admin", { replace: true });
       } else {
         setError("Access denied. Admin only.");
