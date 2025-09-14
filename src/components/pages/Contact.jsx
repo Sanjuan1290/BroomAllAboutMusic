@@ -1,17 +1,54 @@
-﻿import { useState } from "react"
+﻿import { useState } from "react";
+import emailjs from "emailjs-com";
 
 function Contact() {
-  const [form, setForm] = useState({ name: "", email: "", message: "" })
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    alert("Message sent! We'll get back to you soon.")
-    setForm({ name: "", email: "", message: "" })
-  }
+    e.preventDefault();
+    setLoading(true);
+
+    emailjs
+      .send(
+        "service_mei2sff", // ✅ replace with EmailJS service ID
+        "template_d0fvh2n", // ✅ replace with EmailJS template ID
+        {
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          subject: 'BroomAllAboutMusic Message',
+          message: form.message,
+          time: new Date().toLocaleString(), // optional: add timestamp
+        },
+        "gJflIZ_Q7NBFA8o83" // ✅ replace with EmailJS public key
+      )
+      .then(
+        () => {
+          alert("Message sent! We'll get back to you soon.");
+          setForm({
+            name: "",
+            email: "",
+            phone: "",
+            message: "",
+          });
+        },
+        (error) => {
+          console.error("FAILED...", error);
+          alert("Something went wrong. Please try again later.");
+        }
+      )
+      .finally(() => setLoading(false));
+  };
 
   return (
     <div className="max-w-5xl mx-auto py-16 px-6 space-y-12">
@@ -37,7 +74,7 @@ function Contact() {
           <p className="text-gray-700">
             <span className="font-semibold">📧 Email:</span>{" "}
             info@broomallmusic.com
-          </p> 
+          </p>
         </div>
 
         {/* Contact Form */}
@@ -73,6 +110,19 @@ function Contact() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
+              Phone
+            </label>
+            <input
+              type="text"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              required
+              className="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
               Message
             </label>
             <textarea
@@ -86,16 +136,27 @@ function Contact() {
           </div>
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-medium rounded-lg hover:opacity-90 transition"
+            disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-medium rounded-lg hover:opacity-90 transition disabled:opacity-50"
           >
-            Send Message
+            {loading ? "Sending..." : "Send Message"}
           </button>
         </form>
 
-        <iframe className="col-span-2" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d20495.35581969786!2d120.93025975!3d14.338781249999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397d58cc7060449%3A0xba193d41bd00d36b!2sPCU%20Dasmari%C3%B1as%20College%20Building!5e1!3m2!1sen!2sph!4v1757570128903!5m2!1sen!2sph" width="100%" height="450" style={{border:0}} allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" ></iframe>
+        {/* Google Map */}
+        <iframe
+          className="col-span-2"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d20495.35581969786!2d120.93025975!3d14.338781249999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397d58cc7060449%3A0xba193d41bd00d36b!2sPCU%20Dasmari%C3%B1as%20College%20Building!5e1!3m2!1sen!2sph!4v1757570128903!5m2!1sen!2sph"
+          width="100%"
+          height="450"
+          style={{ border: 0 }}
+          allowFullScreen=""
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        ></iframe>
       </div>
     </div>
-  )
+  );
 }
 
-export default Contact
+export default Contact;
