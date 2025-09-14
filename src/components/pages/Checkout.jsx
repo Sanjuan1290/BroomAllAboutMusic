@@ -1,15 +1,16 @@
-﻿import { useParams, Link, useNavigate } from "react-router-dom"
-import { useState, useEffect } from "react"
-import { db } from "../../firebase"
-import { doc, getDoc, collection, getDocs, addDoc } from "firebase/firestore"
+﻿import { useParams, Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { db } from "../../firebase";
+import { doc, getDoc, collection, getDocs, addDoc } from "firebase/firestore";
+import emailjs from "emailjs-com";
 
 function Checkout() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const [pkg, setPkg] = useState(null)
-  const [otherPackages, setOtherPackages] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [pkg, setPkg] = useState(null);
+  const [otherPackages, setOtherPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -19,63 +20,83 @@ function Checkout() {
     eventType: "",
     venue: "",
     guests: "",
-  })
+  });
 
   // Fetch selected package + other packages
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        const docRef = doc(db, "packages", id)
-        const docSnap = await getDoc(docRef)
+        const docRef = doc(db, "packages", id);
+        const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setPkg({ id: docSnap.id, ...docSnap.data() })
+          setPkg({ id: docSnap.id, ...docSnap.data() });
         } else {
-          setError("Package not found")
+          setError("Package not found");
         }
 
-        const querySnap = await getDocs(collection(db, "packages"))
-        const allPkgs = querySnap.docs.map((d) => ({ id: d.id, ...d.data() }))
-        setOtherPackages(allPkgs.filter((p) => p.id !== id))
+        const querySnap = await getDocs(collection(db, "packages"));
+        const allPkgs = querySnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setOtherPackages(allPkgs.filter((p) => p.id !== id));
       } catch (err) {
-        console.error("Error fetching packages:", err)
-        setError("Failed to load package")
+        console.error("Error fetching packages:", err);
+        setError("Failed to load package");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetchPackages()
-  }, [id])
+    };
+    fetchPackages();
+  }, [id]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!pkg) return
+    e.preventDefault();
+    if (!pkg) return;
 
     try {
+      // Save booking to Firestore
       await addDoc(collection(db, "bookings"), {
         ...form,
         packageId: pkg.id,
         packageName: pkg.name,
         status: "pending",
         createdAt: new Date(),
-      })
+      });
+
+      // Send notification via EmailJS
+      await emailjs.send(
+        "service_mei2sff", // ✅ your service ID
+        "template_d0fvh2n", // ✅ your template ID
+        {
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          subject: 'Booking Request(Check your admin panel)',
+          message: `
+            Date of Event: ${form.date}\n
+            eventType: ${form.eventType}\n
+            venue: ${form.venue}\n
+            guests: ${form.guests}\n
+          `,
+        },
+        "gJflIZ_Q7NBFA8o83" // ✅ your public key
+      );
 
       // Redirect with confirmation
       navigate("/thank-you", {
         state: { packageName: pkg.name, name: form.name },
-      })
+      });
     } catch (err) {
-      console.error("Error saving booking:", err)
-      alert("Failed to submit booking. Try again later.")
+      console.error("Error submitting booking:", err);
+      alert("Failed to submit booking. Try again later.");
     }
-  }
+  };
 
   if (loading) {
-    return <p className="text-center py-20 text-gray-500">Loading package...</p>
+    return <p className="text-center py-20 text-gray-500">Loading package...</p>;
   }
 
   if (error) {
@@ -89,7 +110,7 @@ function Checkout() {
           Back to Packages
         </Link>
       </div>
-    )
+    );
   }
 
   return (
@@ -256,7 +277,9 @@ function Checkout() {
                 <h3 className="text-lg font-semibold text-gray-800">
                   {altPkg.name}
                 </h3>
-                <p className="text-gray-600">Capacity: {altPkg.capacity} people</p>
+                <p className="text-gray-600">
+                  Capacity: {altPkg.capacity} people
+                </p>
                 <p className="text-indigo-600 font-bold text-lg">
                   ₱{altPkg.price?.toLocaleString()}
                 </p>
@@ -264,20 +287,19 @@ function Checkout() {
                 <Link
                   to={`/checkout/${altPkg.id}`}
                   onClick={() => {
-                    window.scrollTo({ top: 0, behavior: "smooth" })
+                    window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                   className="mt-4 inline-block text-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition"
                 >
                   Select Package
                 </Link>
-
               </div>
             ))}
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default Checkout
+export default Checkout;
