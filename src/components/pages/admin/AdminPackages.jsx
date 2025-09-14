@@ -8,7 +8,10 @@ import {
   deleteDoc,
   doc,
   updateDoc,
+  query,
+  orderBy,
 } from "firebase/firestore";
+
 
 const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com";
 
@@ -36,13 +39,17 @@ export default function AdminPackages() {
   // Fetch packages
   const fetchPackages = async () => {
     try {
-      const snap = await getDocs(collection(db, "packages"));
-      setPackages(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      const q = query(
+        collection(db, "packages"),
+        orderBy("createdAt", "desc") // ✅ newest first
+      )
+      const snap = await getDocs(q)
+      setPackages(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
     } catch (err) {
-      console.error("Error fetching packages:", err);
-      alert("Error fetching packages: " + err.message);
+      console.error("Error fetching packages:", err)
+      alert("Error fetching packages: " + err.message)
     }
-  };
+  }
 
   useEffect(() => {
     fetchPackages();

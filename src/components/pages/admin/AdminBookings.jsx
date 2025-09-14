@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { db, auth } from "../../../firebase"
-import { collection, getDocs, updateDoc, doc } from "firebase/firestore"
+import { collection, getDocs, updateDoc, doc, query, orderBy } from "firebase/firestore"
 
 const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"
 const ITEMS_PER_PAGE = 10
@@ -13,7 +13,9 @@ export default function AdminBookings() {
 
   const fetchBookings = async () => {
     try {
-      const snap = await getDocs(collection(db, "bookings"))
+      // ✅ Fetch and order by createdAt DESC
+      const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"))
+      const snap = await getDocs(q)
       setBookings(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
     } catch (err) {
       console.error("Error fetching bookings:", err)
@@ -52,7 +54,7 @@ export default function AdminBookings() {
     )
   }
 
-  // 🔎 Filter bookings
+  // 🔎 Filter only pending bookings + search
   const pending = bookings.filter(
     (b) =>
       b.status === "pending" &&

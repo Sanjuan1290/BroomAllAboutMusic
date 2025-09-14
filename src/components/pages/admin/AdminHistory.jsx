@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { db, auth } from "../../../firebase"
-import { collection, getDocs } from "firebase/firestore"
+import { collection, getDocs, query, orderBy } from "firebase/firestore"
 
 const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"
 const ITEMS_PER_PAGE = 10
@@ -13,7 +13,9 @@ export default function AdminHistory() {
 
   const fetchHistory = async () => {
     try {
-      const snap = await getDocs(collection(db, "bookings"))
+      // ✅ Order by createdAt DESC (most recent first)
+      const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"))
+      const snap = await getDocs(q)
       setHistory(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
     } catch (err) {
       console.error("Error fetching history:", err)
@@ -31,7 +33,7 @@ export default function AdminHistory() {
   if (loading) return <p className="p-6 text-gray-500">Loading history...</p>
   if (!isAdmin) return <p className="p-6 text-red-600">Not authorized.</p>
 
-  // ✅ Filter by status + search
+  // ✅ Filter by history statuses + search
   const filtered = history.filter(
     (h) =>
       ["rejected", "completed", "cancelled"].includes(h.status) &&

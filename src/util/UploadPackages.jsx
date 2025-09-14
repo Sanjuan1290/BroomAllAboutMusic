@@ -1,4 +1,4 @@
-import { collection, setDoc, doc } from "firebase/firestore"
+import { collection, setDoc, doc, serverTimestamp } from "firebase/firestore"
 import { db } from "../firebase"
 import packages from "../data/packagesData"
 
@@ -6,10 +6,10 @@ function UploadPackages() {
   const handleUpload = async () => {
     try {
       for (const pkg of packages) {
-        // Firestore will keep power as a number if it's a number here
         const cleanPkg = {
           ...pkg,
-          power: Number(pkg.power), // enforce number
+          power: Number(pkg.power),
+          createdAt: serverTimestamp(), // ✅ Firestore timestamp
         }
 
         await setDoc(doc(collection(db, "packages"), String(pkg.id)), cleanPkg)

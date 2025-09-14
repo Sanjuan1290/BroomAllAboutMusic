@@ -1,5 +1,5 @@
 ﻿import { useEffect, useState } from "react"
-import { collection, getDocs } from "firebase/firestore"
+import { collection, getDocs, query, orderBy } from "firebase/firestore"
 import { db } from "../../firebase"
 
 function Packages() {
@@ -9,7 +9,9 @@ function Packages() {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "packages"))
+        // ✅ Fetch sorted by price (ascending)
+        const q = query(collection(db, "packages"), orderBy("price", "asc"))
+        const querySnapshot = await getDocs(q)
         const data = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
