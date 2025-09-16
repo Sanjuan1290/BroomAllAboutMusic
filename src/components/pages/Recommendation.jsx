@@ -6,46 +6,78 @@ import { db } from "../../firebase"
 
 // 3D
 import { Canvas, useFrame } from "@react-three/fiber"
-import { OrbitControls, useTexture } from "@react-three/drei"
+import { OrbitControls, useTexture, Text } from "@react-three/drei"
 import * as THREE from "three"
 
-// 🏀 Dynamic multi-court floor
-function MultiCourt({ guestCount }) {
-  const courtTexture = useTexture("/textures/court_texture.jpg")
-  courtTexture.wrapS = THREE.ClampToEdgeWrapping
-  courtTexture.wrapT = THREE.ClampToEdgeWrapping
-  courtTexture.anisotropy = 16
+// 🏟️ Venue that changes based on guest count
+// 🏟️ Venue that changes based on guest count
+function Venue3D({ guestCount }) {
+  const courtTex = useTexture("/textures/court_texture.jpg")
+  const hallTex = useTexture("/textures/hall_texture.png")
+  const grandHallTex = useTexture("/textures/grandhall_texture.png")
+  const stadiumTex = useTexture("/textures/stadium_texture.png")
+  const specialTex = useTexture("/textures/stadium_texture.png")
 
-  const capacityPerCourt = 100
-  const courtCount = Math.ceil(guestCount / capacityPerCourt)
-  const gridSize = Math.ceil(Math.sqrt(courtCount))
+  const fixTexture = (tex) => {
+  tex.wrapS = THREE.ClampToEdgeWrapping
+  tex.wrapT = THREE.ClampToEdgeWrapping
+  tex.repeat.set(1, 1)   // only 1 copy
+  tex.anisotropy = 16
+  return tex
+}
 
-  const courts = []
-  let index = 0
-  for (let row = 0; row < gridSize; row++) {
-    for (let col = 0; col < gridSize; col++) {
-      if (index >= courtCount) break
 
-      const offsetX = (col - (gridSize - 1) / 2) * 32
-      const offsetZ = (row - (gridSize - 1) / 2) * 22
+  let venueType = "Court"
+  let size = [30, 20]
+  let floorTexture = fixTexture(courtTex, size)
 
-      courts.push(
-        <mesh
-          key={index}
-          position={[offsetX, 0, offsetZ]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          receiveShadow
-        >
-          <planeGeometry args={[30, 20]} />
-          <meshStandardMaterial map={courtTexture} />
-        </mesh>
-      )
-      index++
-    }
+  if (guestCount <= 100) {
+    venueType = "Court"
+    size = [30, 20]
+    floorTexture = fixTexture(courtTex, size)
+  } else if (guestCount <= 200) {
+    venueType = "Banquet Hall"
+    size = [50, 35]
+    floorTexture = fixTexture(hallTex, size)
+  } else if (guestCount <= 300) {
+    venueType = "Grand Hall"
+    size = [70, 50]
+    floorTexture = fixTexture(grandHallTex, size)
+  } else if (guestCount <= 1000) {
+    venueType = "Stadium"
+    size = [120, 90]
+    floorTexture = fixTexture(stadiumTex, size)
+  } else {
+    venueType = "Special Arrangement"
+    size = [150, 120]
+    floorTexture = fixTexture(specialTex, size)
   }
 
-  return <group>{courts}</group>
+  return (
+    <group>
+      {/* Floor */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={size} />
+        <meshStandardMaterial map={floorTexture} />
+      </mesh>
+
+      {/* Floating label */}
+      <Text
+        position={[0, 5, 0]}
+        fontSize={4}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+        outlineWidth={0.15}
+        outlineColor="black"
+      >
+        {venueType}
+      </Text>
+    </group>
+  )
 }
+
+
 
 // 🔊 Speaker with pulsing waves
 function Speaker({ range }) {
@@ -81,41 +113,42 @@ function Speaker({ range }) {
   )
 }
 
-// 👥 Dynamic guests spread across multiple courts
+// 👥 Dynamic guests spread inside venue
 function Guests({ count }) {
-  const capacityPerCourt = 100
-  const courtCount = Math.ceil(count / capacityPerCourt)
-  const gridSize = Math.ceil(Math.sqrt(courtCount))
-
   const positions = useMemo(() => {
     const pos = []
-    let guestIndex = 0
+    if (count <= 0) return pos
 
-    for (let courtRow = 0; courtRow < gridSize; courtRow++) {
-      for (let courtCol = 0; courtCol < gridSize; courtCol++) {
-        if (guestIndex >= count) break
-
-        const offsetX = (courtCol - (gridSize - 1) / 2) * 32
-        const offsetZ = (courtRow - (gridSize - 1) / 2) * 22
-
-        const guestsOnThisCourt = Math.min(
-          capacityPerCourt,
-          count - guestIndex
-        )
-
-        const cols = 10
-        for (let i = 0; i < guestsOnThisCourt; i++) {
-          const row = Math.floor(i / cols)
-          const col = i % cols
-          const x = -9 + col * 2 + offsetX
-          const z = 7 - row * 2 + offsetZ
-          pos.push([x, 0.3, z])
-        }
-
-        guestIndex += guestsOnThisCourt
-      }
+    let width = 30
+    let depth = 20
+    if (count <= 100) {
+      width = 30
+      depth = 20
+    } else if (count <= 200) {
+      width = 50
+      depth = 35
+    } else if (count <= 300) {
+      width = 70
+      depth = 50
+    } else if (count <= 1000) {
+      width = 120
+      depth = 90
+    } else {
+      width = 150
+      depth = 120
     }
 
+    const cols = Math.ceil(Math.sqrt(count))
+    const spacingX = width / cols
+    const spacingZ = depth / cols
+
+    for (let i = 0; i < count; i++) {
+      const row = Math.floor(i / cols)
+      const col = i % cols
+      const x = -width / 2 + col * spacingX + spacingX / 2
+      const z = -depth / 2 + row * spacingZ + spacingZ / 2
+      pos.push([x, 0.3, z])
+    }
     return pos
   }, [count])
 
@@ -233,10 +266,10 @@ function Recommendation() {
               Step 2: Visualize in 3D
             </h2>
             <div className="h-[300px] w-[400px] sm:w-[500px] rounded-xl overflow-hidden shadow-lg border">
-              <Canvas camera={{ position: [40, 30, 40], fov: 60 }}>
+              <Canvas camera={{ position: [60, 40, 60], fov: 60 }}>
                 <ambientLight intensity={0.6} />
                 <directionalLight position={[10, 15, 5]} />
-                <MultiCourt guestCount={parseInt(guests, 10)} />
+                <Venue3D guestCount={parseInt(guests, 10)} />
                 <Speaker range={speakerRange} />
                 <Guests count={parseInt(guests, 10)} />
                 <OrbitControls enablePan enableZoom enableRotate />
