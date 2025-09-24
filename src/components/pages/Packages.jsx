@@ -45,7 +45,8 @@ function Packages() {
 
       {/* Packages Grid */}
       <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
-        {packages.map((pkg) => (
+        {
+        packages.map((pkg) => (
           <div
             key={pkg.id}
             className="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition bg-white flex flex-col"
@@ -84,7 +85,7 @@ function Packages() {
               </ul>
 
               {/* Show inclusions */}
-              {pkg.inclusion && pkg.inclusion.length > 0 && (
+              {Array.isArray(pkg.inclusion) && pkg.inclusion.length > 0 && (
                 <div className="mt-4">
                   <h4 className="font-semibold text-gray-800 text-sm">
                     Inclusions:
@@ -92,10 +93,11 @@ function Packages() {
                   <ul className="list-disc list-inside text-gray-600 text-sm">
                     {pkg.inclusion.slice(0, 3).map((item, index) => (
                       <li key={index}>{item}</li>
-                    ))}
+                    ))}``
                   </ul>
                 </div>
               )}
+
 
               <div className="mt-6">
                 <p className="text-2xl font-bold text-gray-900">
@@ -110,7 +112,8 @@ function Packages() {
               </div>
             </div>
           </div>
-        ))}
+        ))
+        }
       </div>
     </div>
   )
