@@ -9,7 +9,6 @@ function Packages() {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        // ✅ Fetch sorted by price (ascending)
         const q = query(collection(db, "packages"), orderBy("price", "asc"))
         const querySnapshot = await getDocs(q)
         const data = querySnapshot.docs.map((doc) => ({
@@ -30,6 +29,15 @@ function Packages() {
     return <p className="text-center text-gray-500">Loading packages...</p>
   }
 
+  // 🔧 helper: turn string into array safely
+  const toList = (val) => {
+    if (!val) return []
+    if (typeof val === "string") {
+      return val.split(",").map((v) => v.trim())
+    }
+    return []
+  }
+
   return (
     <div className="space-y-12">
       {/* Header */}
@@ -45,75 +53,92 @@ function Packages() {
 
       {/* Packages Grid */}
       <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
-        {
-        packages.map((pkg) => (
-          <div
-            key={pkg.id}
-            className="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition bg-white flex flex-col"
-          >
-            {/* Image */}
+        {packages.map((pkg) => {
+          const inclusions = toList(pkg.inclusion)
+          const events = toList(pkg.recommendedEvent)
+          const addOns = toList(pkg.addOns)
+
+          return (
             <div
-              className="relative h-40 w-full overflow-hidden flex items-center justify-center"
-              style={{
-                background: pkg.colorFrom
-                  ? `linear-gradient(to right, ${pkg.colorFrom}, ${pkg.colorTo})`
-                  : "#f3f4f6",
-              }}
+              key={pkg.id}
+              className="rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition bg-white flex flex-col"
             >
-              <img
-                src={pkg.image}
-                alt={pkg.name}
-                className="h-full w-full object-contain mix-blend-multiply"
-              />
-              {/* Recommended Event Badge */}
-              {pkg.recommendedEvent && pkg.recommendedEvent.length > 0 && (
-                <span className="absolute top-3 left-3 bg-black/70 text-white text-xs px-3 py-1 rounded-full">
-                  🎉 {pkg.recommendedEvent[0]}
-                </span>
-              )}
-            </div>
+              {/* Image */}
+              <div
+                className="relative h-40 w-full overflow-hidden flex items-center justify-center"
+                style={{
+                  background: pkg.colorFrom
+                    ? `linear-gradient(to right, ${pkg.colorFrom}, ${pkg.colorTo})`
+                    : "#f3f4f6",
+                }}
+              >
+                <img
+                  src={pkg.image}
+                  alt={pkg.name}
+                  className="h-full w-full object-contain mix-blend-multiply"
+                />
+                {/* Recommended Event Badge */}
+                {events.length > 0 && (
+                  <span className="absolute top-3 left-3 bg-black/70 text-white text-xs px-3 py-1 rounded-full">
+                    🎉 {events[0]}
+                  </span>
+                )}
+              </div>
 
-            {/* Content */}
-            <div className="p-6 flex flex-col flex-1 justify-between">
-              <h3 className="text-xl font-bold text-gray-900">{pkg.name}</h3>
+              {/* Content */}
+              <div className="p-6 flex flex-col flex-1 justify-between">
+                <h3 className="text-xl font-bold text-gray-900">{pkg.name}</h3>
 
-              <ul className="mt-4 space-y-2 text-sm text-gray-600">
-                <li>👥 Capacity: {pkg.capacity} people</li>
-                <li>🔊 Power: {pkg.power}W</li>
-                <li>🎤 Speakers: {pkg.speakers}</li>
-                <li>⏳ Duration: {pkg.duration} hrs</li>
-              </ul>
+                <ul className="mt-4 space-y-2 text-sm text-gray-600">
+                  <li>👥 Capacity: {pkg.capacity} people</li>
+                  <li>🔊 Power: {pkg.power}W</li>
+                  <li>🎤 Speakers: {pkg.speakers}</li>
+                  <li>⏳ Duration: {pkg.duration} hrs</li>
+                </ul>
 
-              {/* Show inclusions */}
-              {Array.isArray(pkg.inclusion) && pkg.inclusion.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="font-semibold text-gray-800 text-sm">
-                    Inclusions:
-                  </h4>
-                  <ul className="list-disc list-inside text-gray-600 text-sm">
-                    {pkg.inclusion.slice(0, 3).map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}``
-                  </ul>
+                {/* Show inclusions */}
+                {inclusions.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="font-semibold text-gray-800 text-sm">
+                      Inclusions:
+                    </h4>
+                    <ul className="list-disc list-inside text-gray-600 text-sm">
+                      {inclusions.slice(0, 3).map((item, index) => (
+                        <li key={index}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Show addOns if any */}
+                {addOns.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="font-semibold text-gray-800 text-sm">
+                      Add-ons:
+                    </h4>
+                    <ul className="list-disc list-inside text-gray-600 text-sm">
+                      {addOns.slice(0, 3).map((item, index) => (
+                        <li key={index}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="mt-6">
+                  <p className="text-2xl font-bold text-gray-900">
+                    ₱{pkg.price.toLocaleString()}
+                  </p>
+                  <a
+                    href={`/packages/${pkg.id}`}
+                    className="mt-4 inline-block w-full text-center px-4 py-2 rounded-lg text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:opacity-90 transition"
+                  >
+                    View Details
+                  </a>
                 </div>
-              )}
-
-
-              <div className="mt-6">
-                <p className="text-2xl font-bold text-gray-900">
-                  ₱{pkg.price.toLocaleString()}
-                </p>
-                <a
-                  href={`/packages/${pkg.id}`}
-                  className="mt-4 inline-block w-full text-center px-4 py-2 rounded-lg text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:opacity-90 transition"
-                >
-                  View Details
-                </a>
               </div>
             </div>
-          </div>
-        ))
-        }
+          )
+        })}
       </div>
     </div>
   )

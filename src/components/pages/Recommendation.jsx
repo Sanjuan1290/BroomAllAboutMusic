@@ -10,7 +10,6 @@ import { OrbitControls, useTexture, Text } from "@react-three/drei"
 import * as THREE from "three"
 
 // 🏟️ Venue that changes based on guest count
-// 🏟️ Venue that changes based on guest count
 function Venue3D({ guestCount }) {
   const courtTex = useTexture("/textures/court_texture.jpg")
   const hallTex = useTexture("/textures/hall_texture.png")
@@ -19,38 +18,37 @@ function Venue3D({ guestCount }) {
   const specialTex = useTexture("/textures/stadium_texture.png")
 
   const fixTexture = (tex) => {
-  tex.wrapS = THREE.ClampToEdgeWrapping
-  tex.wrapT = THREE.ClampToEdgeWrapping
-  tex.repeat.set(1, 1)   // only 1 copy
-  tex.anisotropy = 16
-  return tex
-}
-
+    tex.wrapS = THREE.ClampToEdgeWrapping
+    tex.wrapT = THREE.ClampToEdgeWrapping
+    tex.repeat.set(1, 1)
+    tex.anisotropy = 16
+    return tex
+  }
 
   let venueType = "Court"
   let size = [30, 20]
-  let floorTexture = fixTexture(courtTex, size)
+  let floorTexture = fixTexture(courtTex)
 
   if (guestCount <= 100) {
     venueType = "Court"
     size = [30, 20]
-    floorTexture = fixTexture(courtTex, size)
+    floorTexture = fixTexture(courtTex)
   } else if (guestCount <= 200) {
     venueType = "Banquet Hall"
     size = [50, 35]
-    floorTexture = fixTexture(hallTex, size)
+    floorTexture = fixTexture(hallTex)
   } else if (guestCount <= 300) {
     venueType = "Grand Hall"
     size = [70, 50]
-    floorTexture = fixTexture(grandHallTex, size)
+    floorTexture = fixTexture(grandHallTex)
   } else if (guestCount <= 1000) {
     venueType = "Stadium"
     size = [120, 90]
-    floorTexture = fixTexture(stadiumTex, size)
+    floorTexture = fixTexture(stadiumTex)
   } else {
     venueType = "Special Arrangement"
     size = [150, 120]
-    floorTexture = fixTexture(specialTex, size)
+    floorTexture = fixTexture(specialTex)
   }
 
   return (
@@ -76,8 +74,6 @@ function Venue3D({ guestCount }) {
     </group>
   )
 }
-
-
 
 // 🔊 Speaker with pulsing waves
 function Speaker({ range }) {
@@ -331,8 +327,11 @@ function Recommendation() {
                   )}
                   {pkg.addOns && (
                     <ul className="mt-4 list-disc list-inside space-y-1">
-                      {pkg.addOns.map((extra, i) => (
-                        <li key={i}>{extra}</li>
+                      {(Array.isArray(pkg.addOns)
+                        ? pkg.addOns
+                        : String(pkg.addOns).split(",")
+                      ).map((extra, i) => (
+                        <li key={i}>{extra.trim()}</li>
                       ))}
                     </ul>
                   )}

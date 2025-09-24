@@ -62,7 +62,6 @@ function Checkout() {
     const windowMs = 4 * 60 * 60 * 1000; // 4 hours
 
     let attempts = JSON.parse(localStorage.getItem(limitKey)) || [];
-    // Remove old attempts (older than 4h)
     attempts = attempts.filter((t) => now - t < windowMs);
 
     if (attempts.length >= 5) {
@@ -70,7 +69,6 @@ function Checkout() {
       return;
     }
 
-    // Add this attempt
     attempts.push(now);
     localStorage.setItem(limitKey, JSON.stringify(attempts));
     // --- end rate limit ---
@@ -87,8 +85,8 @@ function Checkout() {
 
       // Send notification via EmailJS
       await emailjs.send(
-        "service_mei2sff", // ✅ your service ID
-        "template_d0fvh2n", // ✅ your template ID
+        "service_mei2sff",
+        "template_d0fvh2n",
         {
           name: form.name,
           email: form.email,
@@ -96,15 +94,14 @@ function Checkout() {
           subject: "Booking Request (Check your admin panel)",
           message: `
             Date of Event: ${form.date}\n
-            eventType: ${form.eventType}\n
-            venue: ${form.venue}\n
-            guests: ${form.guests}\n
+            Event Type: ${form.eventType}\n
+            Venue: ${form.venue}\n
+            Guests: ${form.guests}\n
           `,
         },
-        "gJflIZ_Q7NBFA8o83" // ✅ your public key
+        "gJflIZ_Q7NBFA8o83"
       );
 
-      // Redirect with confirmation
       navigate("/thank-you", {
         state: { packageName: pkg.name, name: form.name },
       });
@@ -113,7 +110,6 @@ function Checkout() {
       alert("Failed to submit booking. Try again later.");
     }
   };
-
 
   if (loading) {
     return <p className="text-center py-20 text-gray-500">Loading package...</p>;
@@ -158,7 +154,7 @@ function Checkout() {
             <p><strong>Total Power:</strong> {pkg.power}W</p>
             <p><strong>Speakers:</strong> {pkg.speakers}</p>
             {pkg.recommendedEvent && (
-              <p><strong>Recommended For:</strong> {pkg.recommendedEvent.join(", ")}</p>
+              <p><strong>Recommended For:</strong> {pkg.recommendedEvent}</p>
             )}
           </div>
 
@@ -167,9 +163,11 @@ function Checkout() {
             <div className="mt-4">
               <h3 className="font-medium text-gray-700">Inclusions:</h3>
               <ul className="list-disc pl-5 text-gray-600 space-y-1">
-                {pkg.inclusion.map((item, idx) => (
-                  <li key={idx}>{item}</li>
-                ))}
+                {pkg.inclusion
+                  .split(",")
+                  .map((item, idx) => (
+                    <li key={idx}>{item.trim()}</li>
+                  ))}
               </ul>
             </div>
           )}
@@ -179,9 +177,11 @@ function Checkout() {
             <div className="mt-4">
               <h3 className="font-medium text-gray-700">Available Add-Ons:</h3>
               <ul className="list-disc pl-5 text-gray-600 space-y-1">
-                {pkg.addOns.map((item, idx) => (
-                  <li key={idx}>{item}</li>
-                ))}
+                {pkg.addOns
+                  .split(",")
+                  .map((item, idx) => (
+                    <li key={idx}>{item.trim()}</li>
+                  ))}
               </ul>
             </div>
           )}

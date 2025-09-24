@@ -47,6 +47,19 @@ function PackageDetails() {
     )
   }
 
+  // 🔧 helper: split strings into arrays
+  const toList = (val) => {
+    if (!val) return []
+    if (typeof val === "string") {
+      return val.split(",").map((v) => v.trim())
+    }
+    return []
+  }
+
+  const inclusions = toList(pkg.inclusion)
+  const addOns = toList(pkg.addOns)
+  const events = toList(pkg.recommendedEvent)
+
   return (
     <div className="max-w-4xl mx-auto space-y-12">
       {/* Image */}
@@ -80,20 +93,20 @@ function PackageDetails() {
           {pkg.duration && <li><strong>Duration:</strong> {pkg.duration} hrs</li>}
           {pkg.power && <li><strong>Total Power:</strong> {pkg.power}W</li>}
           {pkg.speakers && <li><strong>Speakers:</strong> {pkg.speakers}</li>}
-          {pkg.recommendedEvent && pkg.recommendedEvent.length > 0 && (
+          {events.length > 0 && (
             <li className="text-emerald-600 font-medium">
-              <strong>Recommended For:</strong> {pkg.recommendedEvent.join(", ")}
+              <strong>Recommended For:</strong> {events.join(", ")}
             </li>
           )}
         </ul>
       </div>
 
       {/* Inclusions */}
-      {pkg.inclusion && pkg.inclusion.length > 0 && (
+      {inclusions.length > 0 && (
         <div className="p-6 border rounded-2xl shadow-sm bg-white">
           <h2 className="text-xl font-semibold text-gray-900">Inclusions</h2>
           <ul className="mt-4 space-y-3 text-gray-700">
-            {pkg.inclusion.map((item, index) => (
+            {inclusions.map((item, index) => (
               <li
                 key={index}
                 className="flex items-center space-x-2 border-b pb-2 last:border-none"
@@ -107,11 +120,11 @@ function PackageDetails() {
       )}
 
       {/* Add-Ons */}
-      {pkg.addOns && pkg.addOns.length > 0 && (
+      {addOns.length > 0 && (
         <div className="p-6 border rounded-2xl shadow-sm bg-white">
           <h2 className="text-xl font-semibold text-gray-900">Available Add-Ons</h2>
           <ul className="mt-4 space-y-3 text-gray-700">
-            {pkg.addOns.map((item, index) => (
+            {addOns.map((item, index) => (
               <li
                 key={index}
                 className="flex items-center space-x-2 border-b pb-2 last:border-none"
