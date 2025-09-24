@@ -56,6 +56,25 @@ function Checkout() {
     e.preventDefault();
     if (!pkg) return;
 
+    // --- 🔒 Rate limit logic ---
+    const now = Date.now();
+    const limitKey = "booking_attempts";
+    const windowMs = 4 * 60 * 60 * 1000; // 4 hours
+
+    let attempts = JSON.parse(localStorage.getItem(limitKey)) || [];
+    // Remove old attempts (older than 4h)
+    attempts = attempts.filter((t) => now - t < windowMs);
+
+    if (attempts.length >= 5) {
+      alert("⏳ You’ve reached the limit of 5 booking requests in 4 hours. Please try again later.");
+      return;
+    }
+
+    // Add this attempt
+    attempts.push(now);
+    localStorage.setItem(limitKey, JSON.stringify(attempts));
+    // --- end rate limit ---
+
     try {
       // Save booking to Firestore
       await addDoc(collection(db, "bookings"), {
@@ -74,7 +93,7 @@ function Checkout() {
           name: form.name,
           email: form.email,
           phone: form.phone,
-          subject: 'Booking Request(Check your admin panel)',
+          subject: "Booking Request (Check your admin panel)",
           message: `
             Date of Event: ${form.date}\n
             eventType: ${form.eventType}\n
@@ -94,6 +113,7 @@ function Checkout() {
       alert("Failed to submit booking. Try again later.");
     }
   };
+
 
   if (loading) {
     return <p className="text-center py-20 text-gray-500">Loading package...</p>;

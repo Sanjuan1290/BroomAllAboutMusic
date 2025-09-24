@@ -12,7 +12,6 @@ import {
   orderBy,
 } from "firebase/firestore";
 
-
 const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com";
 
 export default function AdminPackages() {
@@ -34,22 +33,22 @@ export default function AdminPackages() {
     colorTo: "#8b5cf6",
   });
 
-  const [editId, setEditId] = useState(null); // track if editing
+  const [editId, setEditId] = useState(null);
 
   // Fetch packages
   const fetchPackages = async () => {
     try {
       const q = query(
         collection(db, "packages"),
-        orderBy("createdAt", "desc") // ✅ newest first
-      )
-      const snap = await getDocs(q)
-      setPackages(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+        orderBy("createdAt", "desc")
+      );
+      const snap = await getDocs(q);
+      setPackages(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     } catch (err) {
-      console.error("Error fetching packages:", err)
-      alert("Error fetching packages: " + err.message)
+      console.error("Error fetching packages:", err);
+      alert("Error fetching packages: " + err.message);
     }
-  }
+  };
 
   useEffect(() => {
     fetchPackages();
@@ -69,16 +68,10 @@ export default function AdminPackages() {
         price: Number(newPackage.price) || 0,
         power: Number(newPackage.power) || 0,
         speakers: newPackage.speakers || "",
-        addOns: newPackage.addOns
-          ? newPackage.addOns.split(",").map((s) => s.trim())
-          : [],
-        inclusion: newPackage.inclusion
-          ? newPackage.inclusion.split(",").map((s) => s.trim())
-          : [],
+        addOns: newPackage.addOns || "",          // string
+        inclusion: newPackage.inclusion || "",    // string
         duration: Number(newPackage.duration) || 0,
-        recommendedEvent: newPackage.recommendedEvent
-          ? newPackage.recommendedEvent.split(",").map((s) => s.trim())
-          : [],
+        recommendedEvent: newPackage.recommendedEvent || "", // string
         image: newPackage.image,
         colorFrom: newPackage.colorFrom || "#6366f1",
         colorTo: newPackage.colorTo || "#8b5cf6",
@@ -135,9 +128,9 @@ export default function AdminPackages() {
   const handleEdit = (pkg) => {
     setNewPackage({
       ...pkg,
-      addOns: (pkg.addOns || []).join(", "),
-      inclusion: (pkg.inclusion || []).join(", "),
-      recommendedEvent: (pkg.recommendedEvent || []).join(", "),
+      addOns: pkg.addOns || "",
+      inclusion: pkg.inclusion || "",
+      recommendedEvent: pkg.recommendedEvent || "",
     });
     setEditId(pkg.id);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -263,8 +256,7 @@ export default function AdminPackages() {
 
         <div>
           <label className="block text-sm font-medium mb-1">
-            Recommended Events{" "}
-            <span className="text-gray-500">(comma separated)</span>
+            Recommended Events <span className="text-gray-500">(comma separated)</span>
           </label>
           <input
             type="text"
@@ -382,9 +374,9 @@ export default function AdminPackages() {
               <p>Price: ₱{pkg.price?.toLocaleString()}</p>
               <p>Power: {pkg.power}W</p>
               <p>Speakers: {pkg.speakers}</p>
-              <p>AddOns: {(pkg.addOns || []).join(", ")}</p>
-              <p>Inclusion: {(pkg.inclusion || []).join(", ")}</p>
-              <p>Recommended: {(pkg.recommendedEvent || []).join(", ")}</p>
+              <p>AddOns: {pkg.addOns || "-"}</p>
+              <p>Inclusion: {pkg.inclusion || "-"}</p>
+              <p>Recommended: {pkg.recommendedEvent || "-"}</p>
               <p>Duration: {pkg.duration} mins</p>
             </div>
 
