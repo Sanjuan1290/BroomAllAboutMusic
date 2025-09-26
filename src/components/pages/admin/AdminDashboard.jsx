@@ -110,21 +110,21 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-10">
       {/* Header */}
-      <h1 className="text-4xl font-bold text-gray-900">📊 Admin Dashboard</h1>
+      <h1 className="text-3xl md:text-4xl font-bold text-gray-900">📊 Admin Dashboard</h1>
 
       {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <div className="p-6 rounded-2xl shadow bg-gradient-to-r from-indigo-500 to-indigo-700 text-white">
           <h2 className="text-lg font-medium">Total Packages</h2>
-          <p className="text-4xl font-bold mt-2">{totalPackages}</p>
+          <p className="text-3xl md:text-4xl font-bold mt-2">{totalPackages}</p>
         </div>
         <div className="p-6 rounded-2xl shadow bg-gradient-to-r from-green-500 to-emerald-700 text-white">
           <h2 className="text-lg font-medium">Upcoming Bookings</h2>
-          <p className="text-4xl font-bold mt-2">{upcomingBookings}</p>
+          <p className="text-3xl md:text-4xl font-bold mt-2">{upcomingBookings}</p>
         </div>
         <div className="p-6 rounded-2xl shadow bg-gradient-to-r from-purple-500 to-pink-600 text-white">
           <h2 className="text-lg font-medium">Completed Events</h2>
-          <p className="text-4xl font-bold mt-2">{completedEvents}</p>
+          <p className="text-3xl md:text-4xl font-bold mt-2">{completedEvents}</p>
         </div>
       </div>
 
@@ -132,8 +132,10 @@ export default function AdminDashboard() {
       <div className="grid gap-8 md:grid-cols-2">
         {/* Pie Chart */}
         <div className="p-6 bg-white rounded-2xl shadow">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Booking Status Breakdown</h2>
-          <ResponsiveContainer width="100%" height={300}>
+          <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">
+            Booking Status Breakdown
+          </h2>
+          <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
                 data={statusData}
@@ -141,7 +143,7 @@ export default function AdminDashboard() {
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                outerRadius={100}
+                outerRadius={80}
                 label
               >
                 {statusData.map((entry, index) => (
@@ -155,14 +157,14 @@ export default function AdminDashboard() {
 
         {/* Bar Chart */}
         <div className="p-6 bg-white rounded-2xl shadow">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Monthly Bookings</h2>
-          <ResponsiveContainer width="100%" height={300}>
+          <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">Monthly Bookings</h2>
+          <ResponsiveContainer width="100%" height={250}>
             <BarChart data={monthlyData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="count" fill="#6366F1" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="count" fill="#6366F1" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -170,12 +172,12 @@ export default function AdminDashboard() {
 
       {/* Recent Activity */}
       <div className="p-6 bg-white rounded-2xl shadow">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h2>
+        <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">Recent Activity</h2>
         {recentBookings.length === 0 ? (
           <p className="text-gray-500">No recent bookings.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-sm">
+            <table className="w-full text-left border-collapse text-sm md:text-base">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="p-3">Client</th>
@@ -192,7 +194,7 @@ export default function AdminDashboard() {
                     <td className="p-3">{b.date}</td>
                     <td className="p-3">
                       <span
-                        className={`px-2 py-1 text-xs rounded-full font-medium ${
+                        className={`px-2 py-1 text-xs md:text-sm rounded-full font-medium ${
                           statusColors[b.status] || "bg-gray-100 text-gray-600"
                         }`}
                       >

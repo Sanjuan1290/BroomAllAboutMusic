@@ -8,7 +8,7 @@ function Home() {
         <h1 className="text-3xl md:text-5xl font-bold">
           Sound System Rentals Made Simple
         </h1>
-        <p className="mt-4 max-w-xl mx-auto text-lg opacity-90">
+        <p className="mt-4 max-w-xl mx-auto text-sm  sm:text-lg opacity-90">
           BROOM All About Music gives you reliable sound system rentals with
           event-capacity visualization, smart package recommendations, and
           hassle-free booking.

@@ -13,7 +13,6 @@ export default function AdminBookings() {
 
   const fetchBookings = async () => {
     try {
-      // ✅ Fetch and order by createdAt DESC
       const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"))
       const snap = await getDocs(q)
       setBookings(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
@@ -54,7 +53,7 @@ export default function AdminBookings() {
     )
   }
 
-  // 🔎 Filter only pending bookings + search
+  // 🔎 Filter pending bookings + search
   const pending = bookings.filter(
     (b) =>
       b.status === "pending" &&
@@ -65,7 +64,7 @@ export default function AdminBookings() {
       )
   )
 
-  // 📑 Pagination logic
+  // 📑 Pagination
   const totalPages = Math.ceil(pending.length / ITEMS_PER_PAGE)
   const startIndex = (page - 1) * ITEMS_PER_PAGE
   const displayed = pending.slice(startIndex, startIndex + ITEMS_PER_PAGE)
@@ -82,14 +81,14 @@ export default function AdminBookings() {
           value={search}
           onChange={(e) => {
             setSearch(e.target.value)
-            setPage(1) // reset to first page on search
+            setPage(1)
           }}
-          className="px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none w-80"
+          className="px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none w-full md:w-80"
         />
       </div>
 
-      {/* 📋 Bookings Table */}
-      <div className="overflow-x-auto bg-white rounded-xl shadow">
+      {/* 📋 Desktop Table */}
+      <div className="hidden md:block overflow-x-auto bg-white rounded-xl shadow">
         <table className="w-full text-left border-collapse text-sm">
           <thead className="bg-gray-100">
             <tr>
@@ -145,7 +144,46 @@ export default function AdminBookings() {
         </table>
       </div>
 
-      {/* ⬅️➡️ Pagination Controls */}
+      {/* 📱 Mobile Cards */}
+      <div className="md:hidden space-y-4">
+        {displayed.length === 0 ? (
+          <p className="text-center text-gray-500">No pending bookings.</p>
+        ) : (
+          displayed.map((b) => (
+            <div
+              key={b.id}
+              className="bg-white shadow rounded-lg p-4 space-y-2"
+            >
+              <h2 className="font-bold text-lg">{b.name}</h2>
+              <p className="text-sm text-gray-600">{b.email}</p>
+              <p className="text-sm">{b.phone}</p>
+              <p><span className="font-medium">Package:</span> {b.packageName}</p>
+              <p><span className="font-medium">Date:</span> {b.date}</p>
+              <p><span className="font-medium">Event:</span> {b.eventType || "-"}</p>
+              <p><span className="font-medium">Venue:</span> {b.venue || "-"}</p>
+              <p><span className="font-medium">Guests:</span> {b.guests || "-"}</p>
+              <p><span className="font-medium">Status:</span> {b.status}</p>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => updateStatus(b.id, "accepted")}
+                  className="flex-1 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                >
+                  Accept
+                </button>
+                <button
+                  onClick={() => updateStatus(b.id, "rejected")}
+                  className="flex-1 px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                >
+                  Reject
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* ⬅️➡️ Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-between items-center mt-4">
           <button

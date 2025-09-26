@@ -3,7 +3,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../../../firebase";
 import { useEffect, useState } from "react";
 
-const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"; 
+const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com";
 const MAX_SESSION = 2 * 60 * 60 * 1000; // 2 hours in ms
 
 export default function PrivateRoute({ children, adminOnly = true }) {
@@ -22,7 +22,7 @@ export default function PrivateRoute({ children, adminOnly = true }) {
           // session expired → logout
           auth.signOut();
           localStorage.removeItem("adminLoginTime");
-          window.location.href = "/login"; // force redirect
+          setTimeLeft(null);
         } else {
           setTimeLeft(remaining);
         }
@@ -50,12 +50,12 @@ export default function PrivateRoute({ children, adminOnly = true }) {
 
   return (
     <div>
-      {/* Session Countdown Display */}
       {timeLeft !== null && (
         <div className="fixed top-4 right-4 bg-yellow-200 text-gray-800 px-4 py-2 rounded-lg shadow-md">
           Session expires in:{" "}
           <span className="font-bold">
-            {Math.floor(timeLeft / 60000)}m {Math.floor((timeLeft % 60000) / 1000)}s
+            {Math.floor(timeLeft / 60000)}m{" "}
+            {Math.floor((timeLeft % 60000) / 1000)}s
           </span>
         </div>
       )}

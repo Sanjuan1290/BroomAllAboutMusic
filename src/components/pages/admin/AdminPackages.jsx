@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 
 const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com";
+const ITEMS_PER_PAGE = 10;
 
 export default function AdminPackages() {
   const [packages, setPackages] = useState([]);
@@ -34,6 +35,7 @@ export default function AdminPackages() {
   });
 
   const [editId, setEditId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Fetch packages
   const fetchPackages = async () => {
@@ -68,10 +70,10 @@ export default function AdminPackages() {
         price: Number(newPackage.price) || 0,
         power: Number(newPackage.power) || 0,
         speakers: newPackage.speakers || "",
-        addOns: newPackage.addOns || "",          // string
-        inclusion: newPackage.inclusion || "",    // string
+        addOns: newPackage.addOns || "",
+        inclusion: newPackage.inclusion || "",
         duration: Number(newPackage.duration) || 0,
-        recommendedEvent: newPackage.recommendedEvent || "", // string
+        recommendedEvent: newPackage.recommendedEvent || "",
         image: newPackage.image,
         colorFrom: newPackage.colorFrom || "#6366f1",
         colorTo: newPackage.colorTo || "#8b5cf6",
@@ -103,6 +105,7 @@ export default function AdminPackages() {
         colorTo: "#8b5cf6",
       });
 
+      setCurrentPage(1); // reset to first page after save
       await fetchPackages();
     } catch (err) {
       console.error("Error saving package:", err);
@@ -118,6 +121,7 @@ export default function AdminPackages() {
     try {
       await deleteDoc(doc(db, "packages", id));
       setPackages((p) => p.filter((x) => x.id !== id));
+      setCurrentPage(1); // reset to first page after delete
     } catch (err) {
       console.error("Error deleting package:", err);
       alert("Error deleting package: " + err.message);
@@ -137,6 +141,13 @@ export default function AdminPackages() {
   };
 
   const isAdmin = auth.currentUser && auth.currentUser.email === ADMIN_EMAIL;
+
+  // Pagination logic
+  const totalPages = Math.ceil(packages.length / ITEMS_PER_PAGE);
+  const paginatedPackages = packages.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div className="p-6">
@@ -356,7 +367,7 @@ export default function AdminPackages() {
 
       {/* Packages List */}
       <div className="mt-6 grid gap-4 md:grid-cols-2">
-        {packages.map((pkg) => (
+        {paginatedPackages.map((pkg) => (
           <div
             key={pkg.id}
             className="p-4 bg-white rounded-lg shadow flex flex-col justify-between"
@@ -399,6 +410,29 @@ export default function AdminPackages() {
           </div>
         ))}
       </div>
+
+      {/* Pagination controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-sm font-medium">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
