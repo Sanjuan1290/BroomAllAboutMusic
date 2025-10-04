@@ -5,6 +5,18 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore"
 const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"
 const ITEMS_PER_PAGE = 10
 
+const formatDateTime = (raw) =>
+  raw
+    ? new Date(raw).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : "-"
+
+
 export default function AdminHistory() {
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
@@ -97,7 +109,7 @@ export default function AdminHistory() {
                   <td className="p-3">{h.email}</td>
                   <td className="p-3">{h.phone}</td>
                   <td className="p-3">{h.packageName}</td>
-                  <td className="p-3">{h.date}</td>
+                  <td className="p-3">{formatDateTime(h.date)}</td>
                   <td className="p-3">{h.eventType || "-"}</td>
                   <td className="p-3">{h.venue || "-"}</td>
                   <td className="p-3">{h.guests || "-"}</td>
