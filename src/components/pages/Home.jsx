@@ -73,6 +73,71 @@ function Home() {
           Check Availability
         </a>
       </section>
+
+      {/* Reviews Carousel */}
+<section className="py-16 overflow-hidden">
+  <h2 className="text-2xl font-semibold text-center text-gray-800 mb-10">
+    What Our Clients Say
+  </h2>
+
+  <div className="relative">
+    <div
+      className="flex space-x-6"
+      style={{
+        width: "max-content",
+        animation: "scrollLeft 25s linear infinite",
+      }}
+    >
+      {[
+        "BROOM handled our wedding reception flawlessly. The sound was crystal clear!",
+        "Very professional and reliable team. Setup was on time and seamless!",
+        "The bass was insane! Our corporate event felt like a concert.",
+        "Easy booking process and great communication throughout.",
+        "They really understand music needs — perfect for DJs!",
+        "We rented for a school event and everyone loved the clarity.",
+        "Great package recommendations. Saved me a ton of time!",
+        "Honestly the best sound rental I’ve used in years.",
+        "Friendly crew and high-quality equipment.",
+        "Five stars. Will definitely book again for the next gig!",
+      ]
+        // Duplicate reviews for seamless loop
+        .concat([
+          "BROOM handled our wedding reception flawlessly. The sound was crystal clear!",
+          "Very professional and reliable team. Setup was on time and seamless!",
+          "The bass was insane! Our corporate event felt like a concert.",
+          "Easy booking process and great communication throughout.",
+          "They really understand music needs — perfect for DJs!",
+          "We rented for a school event and everyone loved the clarity.",
+          "Great package recommendations. Saved me a ton of time!",
+          "Honestly the best sound rental I’ve used in years.",
+          "Friendly crew and high-quality equipment.",
+          "Five stars. Will definitely book again for the next gig!",
+        ])
+        .map((feedback, i) => (
+          <div
+            key={i}
+            className="min-w-[300px] max-w-[300px] p-6 border rounded-xl bg-white shadow text-center"
+          >
+            <div className="flex justify-center mb-2">
+              {"★★★★★".split("").map((s, idx) => (
+                <span key={idx} className="text-yellow-500 text-lg">★</span>
+              ))}
+            </div>
+            <p className="text-gray-600 italic">“{feedback}”</p>
+          </div>
+        ))}
+    </div>
+  </div>
+
+  {/* Inline keyframes */}
+  <style>{`
+    @keyframes scrollLeft {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+  `}</style>
+</section>
+
     </div>
   )
 }
