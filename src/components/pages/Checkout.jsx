@@ -232,14 +232,22 @@ function Checkout() {
             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600"
           />
 
+          <label className="block text-sm font-medium text-gray-700">
+            Event Date & Setup Time <span className="text-red-500">*</span>
+          </label>
           <input
-            type="date"
+            type="datetime-local"
             name="date"
             value={form.date}
             onChange={handleChange}
             required
+            min={new Date().toISOString().slice(0, 16)} // Prevent booking past times
             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600"
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Please select the <strong>exact date and time</strong> you want us to arrive for setup.
+          </p>
+
 
           <input
             type="text"

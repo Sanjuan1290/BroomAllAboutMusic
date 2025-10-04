@@ -53,7 +53,6 @@ export default function AdminBookings() {
     )
   }
 
-  // 🔎 Filter pending bookings + search
   const pending = bookings.filter(
     (b) =>
       b.status === "pending" &&
@@ -64,16 +63,25 @@ export default function AdminBookings() {
       )
   )
 
-  // 📑 Pagination
   const totalPages = Math.ceil(pending.length / ITEMS_PER_PAGE)
   const startIndex = (page - 1) * ITEMS_PER_PAGE
   const displayed = pending.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+
+  const formatDateTime = (raw) =>
+    raw
+      ? new Date(raw).toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      : "-"
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Pending Bookings</h1>
 
-      {/* 🔎 Search bar */}
       <div className="flex justify-end">
         <input
           type="text"
@@ -87,7 +95,7 @@ export default function AdminBookings() {
         />
       </div>
 
-      {/* 📋 Desktop Table */}
+      {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto bg-white rounded-xl shadow">
         <table className="w-full text-left border-collapse text-sm">
           <thead className="bg-gray-100">
@@ -96,7 +104,7 @@ export default function AdminBookings() {
               <th className="p-3">Email</th>
               <th className="p-3">Phone</th>
               <th className="p-3">Package</th>
-              <th className="p-3">Date</th>
+              <th className="p-3">Date & Time</th>
               <th className="p-3">Event</th>
               <th className="p-3">Venue</th>
               <th className="p-3">Guests</th>
@@ -118,7 +126,7 @@ export default function AdminBookings() {
                   <td className="p-3">{b.email}</td>
                   <td className="p-3">{b.phone}</td>
                   <td className="p-3">{b.packageName}</td>
-                  <td className="p-3">{b.date}</td>
+                  <td className="p-3">{formatDateTime(b.date)}</td>
                   <td className="p-3">{b.eventType || "-"}</td>
                   <td className="p-3">{b.venue || "-"}</td>
                   <td className="p-3">{b.guests || "-"}</td>
@@ -144,21 +152,18 @@ export default function AdminBookings() {
         </table>
       </div>
 
-      {/* 📱 Mobile Cards */}
+      {/* Mobile Cards */}
       <div className="md:hidden space-y-4">
         {displayed.length === 0 ? (
           <p className="text-center text-gray-500">No pending bookings.</p>
         ) : (
           displayed.map((b) => (
-            <div
-              key={b.id}
-              className="bg-white shadow rounded-lg p-4 space-y-2"
-            >
+            <div key={b.id} className="bg-white shadow rounded-lg p-4 space-y-2">
               <h2 className="font-bold text-lg">{b.name}</h2>
               <p className="text-sm text-gray-600">{b.email}</p>
               <p className="text-sm">{b.phone}</p>
               <p><span className="font-medium">Package:</span> {b.packageName}</p>
-              <p><span className="font-medium">Date:</span> {b.date}</p>
+              <p><span className="font-medium">Date:</span> {formatDateTime(b.date)}</p>
               <p><span className="font-medium">Event:</span> {b.eventType || "-"}</p>
               <p><span className="font-medium">Venue:</span> {b.venue || "-"}</p>
               <p><span className="font-medium">Guests:</span> {b.guests || "-"}</p>
@@ -183,7 +188,7 @@ export default function AdminBookings() {
         )}
       </div>
 
-      {/* ⬅️➡️ Pagination */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-between items-center mt-4">
           <button

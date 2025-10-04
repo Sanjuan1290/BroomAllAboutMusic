@@ -42,7 +42,17 @@ export default function AdminUpcoming() {
   if (loading) return <p className="p-6 text-gray-500">Loading upcoming...</p>
   if (!isAdmin) return <p className="p-6 text-red-600">Not authorized.</p>
 
-  // ✅ Filter accepted bookings + search
+  const formatDateTime = (raw) =>
+    raw
+      ? new Date(raw).toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      : "-"
+
   const filtered = upcoming.filter(
     (u) =>
       u.status === "accepted" &&
@@ -53,7 +63,6 @@ export default function AdminUpcoming() {
       )
   )
 
-  // 📑 Pagination
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
   const startIndex = (page - 1) * ITEMS_PER_PAGE
   const displayed = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE)
@@ -70,7 +79,7 @@ export default function AdminUpcoming() {
           value={search}
           onChange={(e) => {
             setSearch(e.target.value)
-            setPage(1) // reset page when searching
+            setPage(1)
           }}
           className="px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none w-80"
         />
@@ -82,16 +91,13 @@ export default function AdminUpcoming() {
           <p className="text-gray-500">No upcoming events.</p>
         ) : (
           displayed.map((e) => (
-            <div
-              key={e.id}
-              className="p-5 bg-white rounded-xl shadow space-y-3 border"
-            >
+            <div key={e.id} className="p-5 bg-white rounded-xl shadow space-y-3 border">
               <h2 className="text-lg font-semibold">{e.packageName}</h2>
               <div className="text-sm text-gray-600 space-y-1">
                 <p>👤 <span className="font-medium">{e.name}</span></p>
                 <p>📧 {e.email}</p>
                 <p>📞 {e.phone}</p>
-                <p>📅 {e.date}</p>
+                <p>📅 {formatDateTime(e.date)}</p>
                 <p>🎉 {e.eventType || "N/A"}</p>
                 <p>📍 {e.venue || "N/A"}</p>
                 <p>👥 {e.guests || "N/A"} guests</p>
