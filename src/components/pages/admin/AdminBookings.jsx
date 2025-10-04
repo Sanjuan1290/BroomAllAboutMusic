@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { db, auth } from "../../../firebase"
 import { collection, getDocs, updateDoc, doc, query, orderBy } from "firebase/firestore"
+import emailjs from "emailjs-com" // MAKE SURE TO npm install emailjs-com
 
 const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"
 const ITEMS_PER_PAGE = 10
@@ -30,13 +31,37 @@ export default function AdminBookings() {
 
   const updateStatus = async (id, status) => {
     try {
+      const booking = bookings.find((b) => b.id === id)
+      if (!booking) return
+
+      // UPDATE FIRESTORE
       await updateDoc(doc(db, "bookings", id), { status })
       setBookings((prev) =>
         prev.map((b) => (b.id === id ? { ...b, status } : b))
       )
+
+      // SEND EMAIL TO CUSTOMER
+      await emailjs.send(
+        "service_3z4hm2b", // YOUR SERVICE ID
+        "template_fbiqq0h", // CUSTOMER NOTIFICATION TEMPLATE
+        {
+          email: booking.email,
+          name: booking.name,
+          packageName: booking.packageName,
+          date: booking.date,
+          status: status,
+          message:
+            status === "accepted"
+              ? `Hi ${booking.name}, your booking for ${booking.packageName} on ${booking.date} has been accepted. See you soon!`
+              : `Hi ${booking.name}, unfortunately your booking for ${booking.packageName} on ${booking.date} was rejected. Please contact us for alternatives.`
+        },
+        "zJmBEXuzmWKQDW3Tb" // YOUR PUBLIC KEY
+      )
+
+      alert(`Booking has been ${status} and the customer was notified.`)
     } catch (err) {
-      console.error("Error updating booking:", err)
-      alert("Failed to update booking status")
+      console.error("Error updating booking or sending email:", err)
+      alert("Failed to update booking or notify customer")
     }
   }
 

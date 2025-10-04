@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { db, auth } from "../../../firebase"
 import { collection, getDocs, updateDoc, doc } from "firebase/firestore"
+import emailjs from "emailjs-com" // MAKE SURE npm install emailjs-com
 
 const ADMIN_EMAIL = "robertrenbysanjuan@gmail.com"
 const ITEMS_PER_PAGE = 10
@@ -28,12 +29,37 @@ export default function AdminUpcoming() {
 
   const updateStatus = async (id, status) => {
     try {
+      const booking = upcoming.find((b) => b.id === id)
+      if (!booking) return
+
+      // UPDATE FIRESTORE
       await updateDoc(doc(db, "bookings", id), { status })
       setUpcoming((prev) =>
         prev.map((b) => (b.id === id ? { ...b, status } : b))
       )
+
+      // SEND EMAIL
+      await emailjs.send(
+        "service_3z4hm2b", // YOUR SERVICE ID
+        "template_fgi1726", // CREATE OR REUSE A TEMPLATE
+        {
+          email: booking.email,
+          name: booking.name,
+          packageName: booking.packageName,
+          date: booking.date,
+          status: status,
+          message:
+            status === "completed"
+              ? `Hi ${booking.name}, your booking for ${booking.packageName} on ${booking.date} is now completed. Thank you!`
+              : `Hi ${booking.name}, your booking for ${booking.packageName} on ${booking.date} has been cancelled. Please contact us for alternatives.`
+        },
+        "zJmBEXuzmWKQDW3Tb" // PUBLIC KEY
+      )
+
+      alert(`Booking has been marked ${status} and the customer was notified.`)
     } catch (err) {
-      console.error("Error updating status:", err)
+      console.error("Error updating status or sending email:", err)
+      alert("Failed to update status or notify customer")
     }
   }
 
@@ -71,7 +97,6 @@ export default function AdminUpcoming() {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Upcoming Events</h1>
 
-      {/* 🔎 Search */}
       <div className="flex justify-end">
         <input
           type="text"
@@ -85,7 +110,6 @@ export default function AdminUpcoming() {
         />
       </div>
 
-      {/* 📋 Events Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {displayed.length === 0 ? (
           <p className="text-gray-500">No upcoming events.</p>
@@ -121,7 +145,6 @@ export default function AdminUpcoming() {
         )}
       </div>
 
-      {/* ⬅️➡️ Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-between items-center mt-4">
           <button
