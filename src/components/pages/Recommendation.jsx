@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo, useRef } from "react"
+﻿import { useState, useEffect, useMemo, useRef, useLayoutEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Users, CreditCard, Star, Sparkles, AlertTriangle } from "lucide-react"
 import { collection, getDocs } from "firebase/firestore"
@@ -21,34 +21,41 @@ function Venue3D({ guestCount }) {
     tex.wrapS = THREE.ClampToEdgeWrapping
     tex.wrapT = THREE.ClampToEdgeWrapping
     tex.repeat.set(1, 1)
-    tex.anisotropy = 16
+    tex.anisotropy = 8 // reduce a bit for performance
     return tex
   }
 
+  // memoize textures
+  useMemo(() => fixTexture(courtTex), [courtTex])
+  useMemo(() => fixTexture(hallTex), [hallTex])
+  useMemo(() => fixTexture(grandHallTex), [grandHallTex])
+  useMemo(() => fixTexture(stadiumTex), [stadiumTex])
+  useMemo(() => fixTexture(specialTex), [specialTex])
+
   let venueType = "Court"
   let size = [30, 20]
-  let floorTexture = fixTexture(courtTex)
+  let floorTexture = courtTex
 
   if (guestCount <= 100) {
     venueType = "Court"
     size = [30, 20]
-    floorTexture = fixTexture(courtTex)
+    floorTexture = courtTex
   } else if (guestCount <= 200) {
     venueType = "Banquet Hall"
     size = [50, 35]
-    floorTexture = fixTexture(hallTex)
+    floorTexture = hallTex
   } else if (guestCount <= 300) {
     venueType = "Grand Hall"
     size = [70, 50]
-    floorTexture = fixTexture(grandHallTex)
+    floorTexture = grandHallTex
   } else if (guestCount <= 1000) {
     venueType = "Stadium"
     size = [120, 90]
-    floorTexture = fixTexture(stadiumTex)
+    floorTexture = stadiumTex
   } else {
     venueType = "Special Arrangement"
     size = [150, 120]
-    floorTexture = fixTexture(specialTex)
+    floorTexture = specialTex
   }
 
   return (
@@ -109,11 +116,13 @@ function Speaker({ range }) {
   )
 }
 
-// 👥 Dynamic guests spread inside venue
+// 👥 Optimized Guests using instancedMesh
 function Guests({ count }) {
-  const positions = useMemo(() => {
-    const pos = []
-    if (count <= 0) return pos
+  const meshRef = useRef()
+  const dummy = useMemo(() => new THREE.Object3D(), [])
+
+  useLayoutEffect(() => {
+    if (!meshRef.current) return
 
     let width = 30
     let depth = 20
@@ -143,17 +152,20 @@ function Guests({ count }) {
       const col = i % cols
       const x = -width / 2 + col * spacingX + spacingX / 2
       const z = -depth / 2 + row * spacingZ + spacingZ / 2
-      pos.push([x, 0.3, z])
+      dummy.position.set(x, 0.3, z)
+      dummy.updateMatrix()
+      meshRef.current.setMatrixAt(i, dummy.matrix)
     }
-    return pos
+    meshRef.current.instanceMatrix.needsUpdate = true
   }, [count])
 
-  return positions.map((pos, i) => (
-    <mesh key={i} position={pos}>
-      <sphereGeometry args={[0.3, 12, 12]} />
-      <meshStandardMaterial color={i % 2 === 0 ? "orange" : "teal"} />
-    </mesh>
-  ))
+  return (
+    <instancedMesh ref={meshRef} args={[null, null, count]}>
+      {/* lower detail sphere */}
+      <sphereGeometry args={[0.3, 8, 8]} />
+      <meshStandardMaterial color="orange" />
+    </instancedMesh>
+  )
 }
 
 // 🛠 Helper: parse package capacity
